@@ -1,0 +1,21 @@
+language: python
+
+python:
+    - "2.7"
+    - "3.3"
+    - "3.4"
+    - "3.5"
+    - "3.6"
+
+install:
+    - pip install -r requirements.txt
+	- jupyter nbextension enable --py --sys-prefix pythreejs
+    - pip install .
+    - pip install --quiet coverage
+    - pip install --quiet coveralls
+
+script:
+    - nosetests -v --nocapture --with-doctest --with-coverage --exe --cover-package=jsonextended
+
+after_success:
+    - coveralls

@@ -1,0 +1,6 @@
+traitlets
+pythreejs
+ipywidgets
+pandas
+numpy
+matplotlib

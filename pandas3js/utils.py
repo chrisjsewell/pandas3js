@@ -9,9 +9,9 @@ import sys
 import importlib
 # python 2/3 compatibility
 try:
-    import builtin
-except:
-    import __builtin__ as builtin
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
     
 def str_to_obj(class_str):
     """ get object from string
@@ -42,7 +42,7 @@ def str_to_obj(class_str):
     try:
         return reduce(getattr, 
                       class_str.split("."), 
-                      builtin)
+                      builtins)
     except:
         pass
 

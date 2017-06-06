@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/chrisjsewell/pandas3js.svg?branch=master)](https://travis-ci.org/chrisjsewell/pandas3js)
+[![Coverage Status](https://coveralls.io/repos/github/chrisjsewell/pandas3js/badge.svg?branch=master)](https://coveralls.io/github/chrisjsewell/pandas3js?branch=master)
 
 # pandas3js
 a [pandas](http://pandas.pydata.org/) dataframe interface for [traitlets](https://traitlets.readthedocs.io/en/stable/index.html) and [pythreejs](https://github.com/jovyan/pythreejs)

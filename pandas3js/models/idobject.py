@@ -6,7 +6,6 @@
 """
 #TODO inefficient to set x,y,z separately? 
 #      ok if hol_trait_notifications and observing all names?
-#TODO to/from pd.Series
 
 import traitlets as trait
 from matplotlib import colors

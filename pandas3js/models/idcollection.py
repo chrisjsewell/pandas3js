@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-# TODO if object id is changed after adding to collection it could cause id clash
 # TODO have way to specify object required without subclassing
 #      otherwise might read in from local namespace
-# TODO where to store/implement geometry modifications (e.g. slices)
 
 import traitlets as trait
 import pandas as pd

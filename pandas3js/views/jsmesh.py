@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#TODO: sphere still hides label, even if opacity < 1
-       # see: https://stackoverflow.com/a/15995475
-       # ideally need to add renderorder to source code
-
 # python 3 to 2 compatibility
 try:
     basestring

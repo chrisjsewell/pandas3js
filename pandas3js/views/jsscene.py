@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# TODO think about using other objects to minimise render cost
-#   in newer (unpublished pythreejs) their is buffergeometry and point 
-#   https://github.com/jovyan/pythreejs/pull/68/commits/ff5e2d647132c747fc29f1d4594345aa01b9d8e3
-#      BufferGeometry, https://threejs.org/docs/#api/core/BufferGeometry
-#            NB: but might not be that fast when rendering a scene with many unique geometries;
-#            https://github.com/mrdoob/three.js/issues/5186
-
 import pythreejs as js
 
 from pandas3js.utils import str_to_obj, obj_to_classstr

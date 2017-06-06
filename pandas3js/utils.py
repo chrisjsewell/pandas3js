@@ -12,10 +12,7 @@ try:
     import builtins
 except ImportError:
     import __builtin__ as builtins
-try:
-    import functools.reduce as reduce
-except ImportError:
-    pass
+from functools import reduce
     
 def str_to_obj(class_str):
     """ get object from string

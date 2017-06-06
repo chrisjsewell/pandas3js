@@ -5,8 +5,9 @@ a pandas dataframe interface for [traitlets](https://traitlets.readthedocs.io/en
 
 ## Installation
 
-    pip install pandas3js
+    pip install -r requirements.txt
     jupyter nbextension enable --py --sys-prefix pythreejs
+    pip install .
     
 ## Examples
 

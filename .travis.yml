@@ -9,7 +9,7 @@ python:
 
 install:
     - pip install -r requirements.txt
-	- jupyter nbextension enable --py --sys-prefix pythreejs
+    - jupyter nbextension enable --py --sys-prefix pythreejs
     - pip install .
     - pip install --quiet coverage
     - pip install --quiet coveralls

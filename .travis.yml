@@ -2,8 +2,8 @@ language: python
 
 python:
     - "2.7"
-    - "3.3"
-    #- "3.4" # matplotlib requires Python 3.4 or later
+    #- "3.3" # matplotlib requires Python 3.4 or later
+    - "3.4" 
     - "3.5"
     - "3.6"
 
@@ -15,7 +15,7 @@ install:
     - pip install --quiet coveralls
 
 script:
-    - nosetests -v --nocapture --with-doctest --with-coverage --exe --cover-package=jsonextended
+    - nosetests -v --nocapture --with-doctest --with-coverage --exe --cover-package=pandas3js
 
 after_success:
     - coveralls

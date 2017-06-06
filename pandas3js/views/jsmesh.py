@@ -5,10 +5,15 @@
        # see: https://stackoverflow.com/a/15995475
        # ideally need to add renderorder to source code
 
+# python 3 to 2 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
+
 import pythreejs as js
 import traitlets as trait 
 from matplotlib import colors
-
 
 from pandas3js.utils import str_to_obj
 

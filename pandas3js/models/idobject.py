@@ -32,10 +32,11 @@ class Color(trait.TraitType):
     >>> color.validate(object, '#ff0000')
     '#ff0000'
     
-    >>> color.validate(object, 1)
-    Traceback (most recent call last):
-     ...    
-    TraitError: The 'None' trait of a type instance must be a color_like value: hex str, rgb/rgba tuple (0 to 1) or valid html name, but a value of 1 <type 'int'> was specified.
+    >>> try:
+    ...     color.validate(object, 1)
+    ... except Exception as err:
+    ...     print(err)
+    The 'None' trait of a type instance must be a color_like value: hex str, rgb/rgba tuple (0 to 1) or valid html name, but a value of 1 <type 'int'> was specified.
     
     """
 

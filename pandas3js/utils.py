@@ -28,8 +28,8 @@ def str_to_obj(class_str):
     Examples
     --------
     
-    >>> print(str_to_obj('float'))
-    <type 'float'>
+    >>> print(str_to_obj('float')(2))
+    2.0
     
     >>> print(str_to_obj('math.sqrt')(4.0))
     2.0
@@ -68,8 +68,8 @@ def obj_to_classstr(obj):
     Examples
     --------
     
-    >>> print(obj_to_classstr([1,2,3]))
-    __builtin__.list
+    >>> print(obj_to_classstr([1,2,3]).split('.')[-1])
+    list
     
     >>> import numpy as np
     >>> print(obj_to_classstr(np.array([1,2,3])))

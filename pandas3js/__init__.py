@@ -5,7 +5,7 @@
 
 """
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 from pandas3js.models.idobject import IDObject, GeometricObject, Sphere
 from pandas3js.models.idcollection import IDCollection, GeometricCollection
@@ -29,7 +29,7 @@ def _run_nose_tests(doctests=True, verbose=True):
         nose_argv.append('--with-doctest')
     nose_argv.append('pandas3js')
     initial_dir = os.getcwd()
-    my_package_file = os.path.abspath(jsonextended.__file__)
+    my_package_file = os.path.abspath(pandas3js.__file__)
     print(my_package_file)
     my_package_dir = os.path.dirname(os.path.dirname(my_package_file))
     print(my_package_dir)

@@ -5,7 +5,7 @@
 
 """
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 from pandas3js.models.idobject import IDObject, GeometricObject, Sphere
 from pandas3js.models.idcollection import IDCollection, GeometricCollection

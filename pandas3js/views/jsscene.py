@@ -3,23 +3,14 @@
 
 import pythreejs as js
 
-from pandas3js.utils import str_to_obj, obj_to_classstr
+from pandas3js.utils import str_to_obj, obj_to_str
 from pandas3js.views.jsmesh import (create_jsmesh_view, 
                                 create_jslabelmesh_view)
 from pandas3js.models.idcollection import GeometricCollection
 
-gobject_jsmapping = {
-'pandas3js.models.idobject.Sphere':{'grepr':'pythreejs.SphereGeometry',
-        'gmap':{'radius':'radius'},
-        'mrepr':'pythreejs.LambertMaterial'}   
-}
-
-glabel_jsmapping = {
-'pandas3js.models.idobject.Sphere':{'height':'radius'}
-}
 
 def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
-                        gobject_jsmap=None, glabel_jsmap=None):
+                        gobject_jsmap=None):
     """create PyThreeJS Scene for GeometricCollection
     and one-way link all GeometricObject attributes and creation/deletion
 
@@ -31,9 +22,7 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
     add_labels : bool
         add object labels to scene
     gobject_jsmap : None or dict
-        a mapping of object strings to create_jsmesh_view kwargs
-    glabel_jsmap : None or dict
-        a mapping of object strings to create_jslabelmesh_view kwargs
+        if None use default gobject->jsobject mapping
                         
     Examples
     --------
@@ -46,7 +35,7 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
                         
     >>> collection.add_object(Sphere(id=1))
     >>> [type(child) for child in scene.children]    
-    [<class 'traitlets.traitlets.Mesh'>, <class 'traitlets.traitlets.Sprite'>, <class 'pythreejs.pythreejs.AmbientLight'>]
+    [<class 'traitlets.traitlets.Sprite'>, <class 'traitlets.traitlets.Mesh'>, <class 'pythreejs.pythreejs.AmbientLight'>]
                         
     >>> sphere = collection.pop(1)
     >>> [type(child) for child in scene.children]
@@ -54,21 +43,15 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
         
     """    
     assert isinstance(gcollect, GeometricCollection), 'gcollect must be a GeometricCollection'
-    if gobject_jsmap is None:
-        gobject_jsmap = gobject_jsmapping
-    if glabel_jsmap is None:
-        glabel_jsmap = glabel_jsmapping
     
     meshes = []
     for gobject in gcollect.idobjects:
-        if add_objects:
-            gmesh = create_jsmesh_view(gobject,
-                    **gobject_jsmap[obj_to_classstr(gobject)])
-            meshes.append(gmesh)
         if add_labels:
-            lmesh = create_jslabelmesh_view(gobject,
-                    **glabel_jsmap[obj_to_classstr(gobject)])
+            lmesh = create_jslabelmesh_view(gobject,gobject_jsmap)
             meshes.append(lmesh)
+        if add_objects:
+            gmesh = create_jsmesh_view(gobject,gobject_jsmap)
+            meshes.append(gmesh)
 
     scene = js.Scene(children=meshes+[js.AmbientLight(color='#777777')]) 
     
@@ -93,12 +76,10 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
 
         new_meshes = []
         for gobject in added_objects:
-            if add_objects:
-                new_meshes.append(create_jsmesh_view(gobject,
-                    **gobject_jsmap[obj_to_classstr(gobject)]))
             if add_labels:
-                new_meshes.append(create_jslabelmesh_view(gobject,
-                    **glabel_jsmap[obj_to_classstr(gobject)]))
+                new_meshes.append(create_jslabelmesh_view(gobject,gobject_jsmap))
+            if add_objects:
+                new_meshes.append(create_jsmesh_view(gobject,gobject_jsmap))
                         
         scene.children = new_meshes + original_children
 

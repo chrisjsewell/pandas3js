@@ -5,15 +5,38 @@
 #     but this does str_to_obj('pandas.DataFrame')
 
 
-import sys
+import os, sys, inspect
 import importlib
+import re
+
 # python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
 try:
     import builtins
 except ImportError:
     import __builtin__ as builtins
 from functools import reduce
     
+def get_data_path(data, module, check_exists=True):
+    """return a directory path to data within a module
+
+    data : str or list of str
+        file name or list of sub-directories and file name (e.g. ['lammps','data.txt'])   
+    """
+    basepath = os.path.dirname(os.path.abspath(inspect.getfile(module)))
+    
+    if isinstance(data, basestring): data = [data]
+    
+    dirpath = os.path.join(basepath, *data)
+    
+    if check_exists:
+        assert os.path.exists(dirpath), '{0} does not exist'.format(dirpath)
+    
+    return dirpath
+
 def str_to_obj(class_str):
     """ get object from string
     
@@ -62,17 +85,17 @@ def str_to_obj(class_str):
 
     return reduce(getattr,class_str.split(".")[1:], module)
 
-def obj_to_classstr(obj):
+def obj_to_str(obj):
     """ get class string from object 
     
     Examples
     --------
     
-    >>> print(obj_to_classstr([1,2,3]).split('.')[-1])
+    >>> print(obj_to_str([1,2,3]).split('.')[-1])
     list
     
     >>> import numpy as np
-    >>> print(obj_to_classstr(np.array([1,2,3])))
+    >>> print(obj_to_str(np.array([1,2,3])))
     numpy.ndarray
        
     """
@@ -82,3 +105,20 @@ def obj_to_classstr(obj):
         return name_str 
     else :
         return '.'.join([mod_str,name_str])
+
+def _atoi(text):
+    return int(text) if text.isdigit() else text
+def natural_keys(text):
+    """human order sorting of number strings
+    
+    Examples
+    --------
+    
+    >>> sorted(['011','1', '21'])
+    ['011', '1', '21']
+    
+    >>> sorted(['011','1', '21'], key=natural_keys)
+    ['1', '011', '21']
+    
+    """
+    return [_atoi(c) for c in re.split('(\d+)',str(text))]

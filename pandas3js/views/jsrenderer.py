@@ -4,7 +4,7 @@
 import pythreejs as js
 
 def create_jsrenderer(scene, height=400,width=400, background='gray',
-                      view=(10,-10, -10, 10)):
+                      view=(10,-10, -10, 10), near=-10):
     """
     
     Properties
@@ -32,7 +32,7 @@ def create_jsrenderer(scene, height=400,width=400, background='gray',
     top, bottom, left, right = view
     camera = js.OrthographicCamera(position=[0,0,1],
                                 top=top, bottom=bottom, left=left, right=right,
-                                near=-10,far=2000,
+                                near=near,far=2000,
                                 children=[
                                     js.DirectionalLight(color='white', 
                                         position=[3, 5, 1], intensity=0.5)])

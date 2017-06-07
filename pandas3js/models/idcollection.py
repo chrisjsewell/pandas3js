@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 
 from pandas3js import IDObject, GeometricObject
-from pandas3js.utils import obj_to_classstr, str_to_obj
+from pandas3js.utils import obj_to_str, str_to_obj
 
 class UniqueIDObjects(trait.TraitType):
 
@@ -241,7 +241,7 @@ class IDCollection(trait.HasTraits):
                 trait_dict[name] = value
 
             if incl_class:
-                trait_dict['otype'] = obj_to_classstr(obj)
+                trait_dict['otype'] = obj_to_str(obj)
 
             data.append(trait_dict)
             

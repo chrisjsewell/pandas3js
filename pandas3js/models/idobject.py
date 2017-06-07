@@ -83,5 +83,18 @@ class Sphere(GeometricObject):
     """
     radius = trait.CFloat(1,min=0.)
     
-atom = Sphere(transparency=0.1,label='zsdfsd')
-atom.label
+def vector3(trait_type=trait.CFloat, default=None, **kwargs):
+    if default is None:
+        default = [0, 0, 0]
+    return trait.List(trait_type, default_value=default, minlen=3, maxlen=3, **kwargs)
+
+class WireBox(GeometricObject):
+    """ a wireframe object
+    """
+    a = vector3()
+    b = vector3()
+    c = vector3()
+    linewidth = trait.CFloat(1)
+    
+    
+    

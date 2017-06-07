@@ -96,5 +96,11 @@ class WireBox(GeometricObject):
     c = vector3()
     linewidth = trait.CFloat(1)
     
+class Line(GeometricObject):
+    
+    start = vector3()
+    end = vector3()
+    linewidth = trait.CFloat(1)
+    
     
     

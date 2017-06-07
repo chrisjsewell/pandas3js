@@ -62,6 +62,30 @@ gobject_jsmapping = {
      'show_label':False,                             
      'label_height':1,
     },
+'pandas3js.models.idobject.Line':
+    {'grep':'pythreejs.PlainGeometry',
+     'gvar':{},
+     'gdmap':{}, 
+     'gfmap':{'vertices':{'vars':('start','end'),
+                          'func':'pandas3js.views.jsmesh._tolist'},
+              'colors':{'vars':('color',),
+                        'func':'pandas3js.views.jsmesh._make_line_colors'}},
+     
+     'matrep':'pythreejs.LineBasicMaterial', 
+     'matvar':{'vertexColors':'VertexColors'},
+     'matdmap':{'visible':'visible','opacity':'transparency','linewidth':'linewidth'},
+     'matfmap':{'transparent':{'vars':('transparency',),
+                               'func':'pandas3js.views.jsmesh._transparent'}},
+
+     'meshrep':'pythreejs.Line',
+     'meshvar':{'type':'LinePieces'},
+     'meshdmap':{},
+     'meshfmap':{},
+
+     'show_label':False,                             
+     'label_height':1,
+    },
+
 }    
 
 # function for mapping
@@ -92,6 +116,12 @@ def _make_box_vertices(x,y,z,a,b,c):
     return [v.tolist() for v in vertices]
 def _make_box_colors(color):
     return [colors.to_hex(color)]*24
+def _make_line_vertices(start,end):
+    """ make box vertices """
+    vertices = [start,end]
+    return [v.tolist() for v in vertices]
+def _make_line_colors(color):
+    return [colors.to_hex(color)]*2
 
 
 def _create_trait_dlink(dic, key, gobject, jsobject):

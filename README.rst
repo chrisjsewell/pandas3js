@@ -22,7 +22,7 @@ Installation
 Examples
 ---------
 
-image:: https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.gif
+.. image:: https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.gif
 
 For more information, all functions contain docstrings with tested examples.
 

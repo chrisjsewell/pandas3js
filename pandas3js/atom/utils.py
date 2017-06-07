@@ -34,8 +34,9 @@ def vectors_from_params(a, b, c, alpha, beta, gamma):
     >>> a.round()
     array([ 1.,  0.,  0.])
     
-    >>> b.round()
-    array([-0.,  2.,  0.])
+    >>> b= b.round()
+    >>> b+0.
+    array([ 0.,  2.,  0.])
     
     >>> c.round()
     array([ 0.,  0.,  3.])

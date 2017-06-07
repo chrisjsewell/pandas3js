@@ -5,7 +5,7 @@
 
 """
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 from pandas3js.models.idobject import (IDObject, GeometricObject, 
                                         Sphere, WireBox, Line)

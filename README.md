@@ -10,7 +10,11 @@ A [pandas](http://pandas.pydata.org/) dataframe interface for [traitlets](https:
 
     $ pip install pandas3js
     $ jupyter nbextension enable --py --sys-prefix pythreejs
+	
+`pandas3js` is integration tested against python versions 2.7, 3.4, 3.5 and 3.6
     
 ## Examples
+
+![IPYNB Example](/pandas3js_example.gif)
 
 For more information, all functions contain docstrings with tested examples.

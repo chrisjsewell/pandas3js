@@ -16,8 +16,9 @@ def _create_callback(renderer, data, select, ddown,
     return handle_ddown
 
 def create_config_gui(data, change_func, 
-                      add_objects=True, add_labels=True,
+                      height=400,width=400, background='gray',
                       view=(10,-10,-10,10),near=-10,
+                      add_objects=True, add_labels=True,
                       add_options=None,
                       otype_column=None):
     """ creates simple gui to handle geometric configuration changes
@@ -29,14 +30,20 @@ def create_config_gui(data, change_func,
     change_func : function
         change_func(cdata,options_dict) -> pandas.DataFrame
         of geometric objects and traits
-    add_objects : bool
-        add objects to scene
-    add_labels : bool
-        add object labels to scene
+    height : int
+        renderer height
+    width : int
+        renderer width
+    background : str
+        renderer background color (html)
     view : tuple
         initial view extents (top,bottom,left,right)
     near : int
         camera distance from origin    
+    add_objects : bool
+        add objects to scene
+    add_labels : bool
+        add object labels to scene
     add_options : None or dict
         additional option lists, to create dropdown boxes 
         with callbacks to change_func as options dict
@@ -137,7 +144,8 @@ def create_config_gui(data, change_func,
     gcollect = pjs.GeometricCollection()
     scene = pjs.create_js_scene_view(gcollect,
                     add_objects=add_objects,add_labels=add_labels)
-    camera, renderer = pjs.create_jsrenderer(scene,view=view,near=near)
+    camera, renderer = pjs.create_jsrenderer(scene,view=view,near=near,
+                                height=height,width=width, background=background)
     
     # a slider for selecting the configuration
     select = widgets.SelectionSlider(description='Configuration:',

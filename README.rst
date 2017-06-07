@@ -9,6 +9,11 @@ pandas3js
 
 A `pandas <http://pandas.pydata.org/>`_ dataframe interface for `traitlets <https://traitlets.readthedocs.io/en/stable/index.html>`_ and `pythreejs <https://github.com/jovyan/pythreejs>`_
 
+Employing a meta Model/View design; Unique geometry objects are stored in a ``GeometryCollection`` **model** object, 
+which can be viewed as (and modified by) a ``pandas.DataFrame``, containing objects (by row) and traits/object_type (by column). 
+The ``GeometryCollection`` (and its objects) can then be directionally synced to a ``pythreejs.Scene`` (and ``pythreejs.3DObject``s) 
+**view**, *via* a json mapping specification.
+
 Installation
 ------------
 
@@ -21,6 +26,8 @@ Installation
     
 Examples
 ---------
+
+`pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.ipynb>`_
 
 .. image:: https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.gif
 

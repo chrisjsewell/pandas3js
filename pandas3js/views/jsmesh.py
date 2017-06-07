@@ -262,7 +262,7 @@ def create_jslabelmesh_view(gobject, mapping=None):
     mesh.gobject_id = gobject.id
     
     if not class_map['show_label']:
-        mesh.visible = True
+        mesh.visible = False
         return mesh
 
     # add directional synchronisation

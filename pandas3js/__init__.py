@@ -5,7 +5,7 @@
 
 """
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 from pandas3js.models.idobject import (IDObject, GeometricObject, 
                                         Sphere, WireBox, Line)
@@ -14,7 +14,7 @@ from pandas3js.models.idcollection import IDCollection, GeometricCollection
 from pandas3js.views.jsmesh import create_jsmesh_view, create_jslabelmesh_view
 from pandas3js.views.jsrenderer import create_jsrenderer
 from pandas3js.views.jsscene import create_js_scene_view
-from pandas3js.views.jsgui import create_config_gui
+from pandas3js.views.jsgui import create_gui
 
 from pandas3js import utils
 

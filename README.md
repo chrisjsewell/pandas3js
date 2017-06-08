@@ -4,7 +4,7 @@
 
 # pandas3js
 
-A [pandas](http://pandas.pydata.org/) dataframe interface for [traitlets](https://traitlets.readthedocs.io/en/stable/index.html) and [pythreejs](https://github.com/jovyan/pythreejs).
+An extension for [traitlets](https://traitlets.readthedocs.io/en/stable/index.html) and [pythreejs](https://github.com/jovyan/pythreejs), which provides a 2-way [pandas](http://pandas.pydata.org/) dataframe interface for trait objects and creates bespoke GUIs in the Jupyter Notebook with only a few lines of code.
 
 Employing a meta Model/View design; Unique geometry objects are stored in a `GeometryCollection` **model** object, 
 which can be viewed as (and modified by) a `pandas.DataFrame`, containing objects (by row) and traits/object_type (by column). 

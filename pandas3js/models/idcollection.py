@@ -142,10 +142,13 @@ class IDCollection(trait.HasTraits):
         return idobjects
             
     def change_by_df(self, df, columns=None, 
-                     otype_default='pandas3js.IDObject', otype_column=None,
+                     otype_default='pandas3js.IDObject', 
+                     otype_column=None,
                     remove_missing=False):
         """ change collection by datafame of idobject traits
-        
+                    
+        Properties
+        ----------
         df : pd.DataFrame
             dataframe containing 'id' column
         columns : None or str
@@ -167,9 +170,11 @@ class IDCollection(trait.HasTraits):
         
         existing_ids = []
         old_objects = []
+        
+        # remove missing if required
         for obj in self.idobjects:
             existing_ids.append(obj.id)
-            if obj.id in df.id or not remove_missing:
+            if obj.id in df.id.values or not remove_missing:
                 old_objects.append(obj)
         
         new_objects = []
@@ -178,7 +183,7 @@ class IDCollection(trait.HasTraits):
         for idx, s in df.iterrows():
              
             # create new objects
-            if not s.id in existing_ids:
+            if not s.id in existing_ids: 
                 otype_name = otype_default if otype_column is None else s[otype_column]
                 try:
                     idobject = str_to_obj(otype_name)()
@@ -193,18 +198,32 @@ class IDCollection(trait.HasTraits):
             else:
                 idobject = self.get(s.id)
                         
-            
+            # TODO test object class is still the same
+            # the process overhead for such a niche case might not be worth it ?
+#            if otype_column is not None:   
+#                otype_name = s[otype_column]              
+#                try:
+#                    newobject = str_to_obj(otype_name)()
+#                    assert isinstance(newobject, self._allowed_object), (
+#                        '{0} is not {1}'.format(newobject, self._allowed_object))
+#                except Exception as err:
+#                    raise TypeError(
+#                    '"{0}" (proposed for id {1}) is not a valid object: \n {2}'.format(otype_name, s.id, err))
+#                if not isinstance(newobject,idobject.__class__):
+#                    old_objects.remove(idobject)
+#                    new_objects.append(newobject)
+
             if not columns is None:
                 s = s[columns]
 
             for key, value in s.iteritems():
-                if key==otype_column:
-                    continue
                 try:
                     if np.isnan(value):
                         continue
                 except:
                     pass
+                if key==otype_column:
+                    continue
                 if not idobject.has_trait(key):
                     raise trait.TraitError('object with id {0} does not have trait: {1}'.format(s.id, key))
                     
@@ -216,7 +235,7 @@ class IDCollection(trait.HasTraits):
             for idobject, key, value in new_traits:
                     idobject.set_trait(key, value)
 
-        self.set_trait('idobjects', tuple(old_objects + new_objects))                
+        self.set_trait('idobjects', tuple(old_objects + new_objects))               
 
         return
 

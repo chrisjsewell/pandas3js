@@ -56,6 +56,7 @@ class Color(trait.TraitType):
 
 class GeometricObject(IDObject):
     """ a geometric object
+    x,y,z should represent the centre of volume
     
     Examples
     --------
@@ -65,9 +66,9 @@ class GeometricObject(IDObject):
     0.0
     
     """
-    x = trait.CFloat(0,help="the x coordinate")
-    y = trait.CFloat(0,help="the y coordinate")
-    z = trait.CFloat(0,help="the z coordinate")
+    x = trait.CFloat(0,help="x coordinate")
+    y = trait.CFloat(0,help="y coordinate")
+    z = trait.CFloat(0,help="z coordinate")
 
     visible = trait.Bool(True)
     color = Color('red')
@@ -91,15 +92,15 @@ def vector3(trait_type=trait.CFloat, default=None, **kwargs):
 class WireBox(GeometricObject):
     """ a wireframe object
     """
-    a = vector3()
-    b = vector3()
-    c = vector3()
+    a = vector3(default=(1,0,0),help='box vector a')
+    b = vector3(default=(0,1,0),help='box vector b')
+    c = vector3(default=(0,0,1),help='box vector c')
     linewidth = trait.CFloat(1)
     
 class Line(GeometricObject):
     
-    start = vector3()
-    end = vector3()
+    start = vector3(default=(0,0,0))
+    end = vector3(default=(1,1,1))
     linewidth = trait.CFloat(1)
     
     

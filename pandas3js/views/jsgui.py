@@ -177,7 +177,7 @@ def create_config_gui(data, change_func,
         value=[left,right],
         min=left,
         max=right,
-        step=abs(right-left)/100,
+        step=abs(right-left)/100.,
         description='axis range',
         readout_format='.1f',
         continuous_update=True,)

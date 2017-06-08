@@ -41,7 +41,7 @@ with io.open('README.rst') as readme:
             'Topic :: Scientific/Engineering :: Physics',
             'Topic :: Software Development :: Libraries :: Python Modules',
         ],
-        keywords='pythreejs, traitlets, geometry, 3D, pandas, python',
+        keywords='pythreejs, traitlets, graphics, 3D, pandas, ipython, jupyter, three.js, webgl',
         zip_safe=True,
         packages = find_packages(),
        # package_data={'': ['*.json', '*.data']},

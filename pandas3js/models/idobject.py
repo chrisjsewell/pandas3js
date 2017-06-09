@@ -54,6 +54,12 @@ class Color(trait.TraitType):
         
         return value
 
+def vector3(trait_type=trait.CFloat, default=None, **kwargs):
+    if default is None:
+        default = (0, 0, 0)
+    return trait.Tuple(trait.CFloat(),trait.CFloat(),trait.CFloat(),
+                    default_value=default, **kwargs)
+                                    
 class GeometricObject(IDObject):
     """ a geometric object
     x,y,z should represent the centre of volume
@@ -62,13 +68,11 @@ class GeometricObject(IDObject):
     --------
     
     >>> gobject = GeometricObject()
-    >>> gobject.x
-    0.0
+    >>> gobject.position
+    (0.0, 0.0, 0.0)
     
     """
-    x = trait.CFloat(0,help="x coordinate")
-    y = trait.CFloat(0,help="y coordinate")
-    z = trait.CFloat(0,help="z coordinate")
+    position = vector3(default=(0,0,0),help='cartesian coordinate of pivot')
 
     visible = trait.Bool(True)
     color = Color('red')
@@ -81,27 +85,80 @@ class GeometricObject(IDObject):
 
 class Sphere(GeometricObject):
     """ a spherical object
+
+    Examples
+    --------
+    
+    >>> sphere = Sphere()
+    >>> sphere.position
+    (0.0, 0.0, 0.0)
+    >>> sphere.radius
+    1.0
+
+    >>> sphere.radius = -1
+    Traceback (most recent call last):
+     ...
+    TraitError: The value of the 'radius' trait of a Sphere instance should not be less than 0.0, but a value of -1.0 was specified
+    
+
     """
     radius = trait.CFloat(1,min=0.)
     
-def vector3(trait_type=trait.CFloat, default=None, **kwargs):
-    if default is None:
-        default = [0, 0, 0]
-    return trait.List(trait_type, default_value=default, minlen=3, maxlen=3, **kwargs)
 
-class WireBox(GeometricObject):
+class Line(GeometricObject):
+    """ a line object
+
+    Examples
+    --------
+    
+    >>> line = Line()
+    >>> line.position
+    (0.0, 0.0, 0.0)
+    >>> line.end
+    (1.0, 1.0, 1.0)
+
+    >>> line.linewidth = -1
+    Traceback (most recent call last):
+     ...
+    TraitError: The value of the 'linewidth' trait of a Line instance should not be less than 0.0, but a value of -1.0 was specified
+        
+    """
+    
+    end = vector3(default=(1,1,1),help='cartesian coordinate of line end')
+    end_color = Color('red')
+    linewidth = trait.CFloat(1,min=0.0)
+
+class BoxWire(GeometricObject):
     """ a wireframe object
+
+    Examples
+    --------
+    
+    >>> box = BoxWire()
+    >>> box.position
+    (0.0, 0.0, 0.0)
+    >>> box.a
+    (1.0, 0.0, 0.0)
+
+    >>> box.pivot = ''
+    Traceback (most recent call last):
+     ...
+    TraitError: pivot must be at the centre or corner
+        
     """
     a = vector3(default=(1,0,0),help='box vector a')
     b = vector3(default=(0,1,0),help='box vector b')
     c = vector3(default=(0,0,1),help='box vector c')
     linewidth = trait.CFloat(1)
+    pivot = trait.CUnicode('centre',help='pivot about centre or corner')
     
-class Line(GeometricObject):
+    @trait.validate('pivot')
+    def _valid_pivot(self, proposal):
+        pivot = proposal['value']
+        if pivot not in ['centre','corner']:
+            raise trait.TraitError('pivot must be at the centre or corner')
+        return proposal['value']        
     
-    start = vector3(default=(0,0,0))
-    end = vector3(default=(1,1,1))
-    linewidth = trait.CFloat(1)
     
     
     

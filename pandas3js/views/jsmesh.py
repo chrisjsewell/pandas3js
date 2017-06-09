@@ -38,15 +38,15 @@ def create_jsmesh_view(gobject,mapping=None):
     Examples
     --------
     
-    >>> from pandas3js import Sphere
-    >>> sphere = Sphere()
+    >>> import pandas3js as pjs
+    >>> sphere = pjs.Sphere()
     >>> mesh = create_jsmesh_view(sphere)
     >>> mesh.position
     [0.0, 0.0, 0.0]
     >>> str(mesh.material.color)
     '#ff0000'
     
-    >>> sphere.x = 1.0
+    >>> sphere.position = (1,0,0)
     >>> mesh.position
     [1.0, 0.0, 0.0]
     
@@ -54,10 +54,13 @@ def create_jsmesh_view(gobject,mapping=None):
     >>> str(mesh.material.color)
     '#ffffff'
     
+    >>> lmesh = create_jsmesh_view(pjs.Line())
+    >>> bmesh = create_jsmesh_view(pjs.BoxWire())
+    
     """
     class_str = obj_to_str(gobject)
     if not class_str in gobject_jsmapping:
-        raise ValueError('No mapping available for {}'.format(class_str))
+        raise ValueError('No pythreejs mapping available for {}'.format(class_str))
     class_map = gobject_jsmapping[class_str]
     
     # create geometry
@@ -111,8 +114,8 @@ def create_jslabelmesh_view(gobject, mapping=None):
     Examples
     --------
     
-    >>> from pandas3js import Sphere
-    >>> sphere = Sphere()
+    >>> import pandas3js as pjs
+    >>> sphere = pjs.Sphere()
     >>> lmesh = create_jslabelmesh_view(sphere)
     >>> lmesh.position
     [0.0, 0.0, 0.0]
@@ -121,7 +124,7 @@ def create_jslabelmesh_view(gobject, mapping=None):
     >>> lmesh.scale
     [1.0, 1.0, 1.0]
     
-    >>> sphere.x = 1.0
+    >>> sphere.position = (1,0,0)
     >>> lmesh.position
     [1.0, 0.0, 0.0]
     
@@ -132,11 +135,11 @@ def create_jslabelmesh_view(gobject, mapping=None):
     >>> sphere.radius = 3.0
     >>> lmesh.scale
     [1.0, 3.0, 1.0]
-
+    
     """
     class_str = obj_to_str(gobject)
     if not class_str in gobject_jsmapping:
-        raise ValueError('No mapping available for {}'.format(class_str))
+        raise ValueError('No pythreejs mapping available for {}'.format(class_str))
     class_map = gobject_jsmapping[class_str]
     
     text_map = js.TextTexture(string=gobject.label, 
@@ -146,7 +149,7 @@ def create_jslabelmesh_view(gobject, mapping=None):
                                 transparent=False,depthTest=False,depthWrite=True)
     height = class_map['label_height']
     height_attr = getattr(gobject,height) if isinstance(height,basestring) else height
-    mesh = js.Sprite(material=material, position=[gobject.x,gobject.y,gobject.z], 
+    mesh = js.Sprite(material=material, position=gobject.position, 
                   scaleToTexture=True, 
                   scale=[1, height_attr, 1])
     mesh.add_traits(gobject_id=trait.Int())
@@ -158,15 +161,12 @@ def create_jslabelmesh_view(gobject, mapping=None):
 
     # add directional synchronisation
     trait.dlink((gobject, 'label'), (text_map, 'string'))
+    trait.dlink((gobject, 'position'), (mesh, 'position'))
     trait.dlink((gobject, 'label_visible'), (mesh, 'visible'))
     trait.dlink((gobject, 'label_color'), (text_map, 'color'), colors.to_hex)
     trait.dlink((gobject, 'label_transparency'), (material, 'opacity'))
     trait.dlink((gobject, 'label_transparency'), (material, 'transparent'),
                lambda t: True if t <= 0.999 else False)
-
-    def change_position(change):
-        mesh.position = [gobject.x,gobject.y,gobject.z]
-    gobject.observe(change_position,names=['x','y','z'])
 
     if isinstance(height,basestring):
         def change_height(change):

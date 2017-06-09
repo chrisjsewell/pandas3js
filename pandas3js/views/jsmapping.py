@@ -3,10 +3,17 @@
 to pythreejs objects
 
 keys:
-    rep  = representation, 
+    g = mapping to pythreejs.Geometry3D
+    mat = mapping to pythreejs.Material
+    mesh = mapping to pythreejs.Mesh
+
+    rep  = subclass representation, 
     var  = static variable mapping, 
     dmap = direct object mapping, 
     fmap = functional mapping
+
+    show_label = whether labels are required
+    label_height = trait to link to label height
 
 """
 
@@ -29,18 +36,17 @@ gobject_jsmapping = {
 
      'meshrep':'pythreejs.Mesh',
      'meshvar':{},
-     'meshdmap':{},
-     'meshfmap':{'position':{'vars':('x','y','z'),
-                             'func':'pandas3js.views.jsmapping._tolist'}},
+     'meshdmap':{'position':'position'},
+     'meshfmap':{},
     
      'show_label':True,                             
      'label_height':'radius',
     },
-'pandas3js.models.idobject.WireBox':
+'pandas3js.models.idobject.BoxWire':
     {'grep':'pythreejs.PlainGeometry',
      'gvar':{},
      'gdmap':{}, 
-     'gfmap':{'vertices':{'vars':('x','y','z','a','b','c'),
+     'gfmap':{'vertices':{'vars':('position','a','b','c','pivot'),
                           'func':'pandas3js.views.jsmapping._make_box_vertices'},
               'colors':{'vars':('color',),
                         'func':'pandas3js.views.jsmapping._make_box_colors'}},
@@ -63,9 +69,9 @@ gobject_jsmapping = {
     {'grep':'pythreejs.PlainGeometry',
      'gvar':{},
      'gdmap':{}, 
-     'gfmap':{'vertices':{'vars':('start','end'),
+     'gfmap':{'vertices':{'vars':('position','end'),
                           'func':'pandas3js.views.jsmapping._tolist'},
-              'colors':{'vars':('color',),
+              'colors':{'vars':('color', 'end_color'),
                         'func':'pandas3js.views.jsmapping._make_line_colors'}},
      
      'matrep':'pythreejs.LineBasicMaterial', 
@@ -85,18 +91,23 @@ gobject_jsmapping = {
 
 }    
 
-# function for mapping
+# functions for mapping
 def _tolist(*args):
     return list(args)
 def _transparent(transparency):
     return True if transparency <= 0.999 else False  
-def _make_box_vertices(x,y,z,a,b,c):
+def _make_line_colors(startcolor,endcolor):
+    return [colors.to_hex(startcolor),colors.to_hex(endcolor)]
+def _make_box_vertices(position,a,b,c,pivot):
     """ make box vertices """
+    o = np.array(position)
     a = np.array(a)
     b = np.array(b)
     c = np.array(c)
-    #have x, y, z at centre of box
-    o = np.array([x,y,z]) - (.5*a+.5*b+.5*c)
+    if pivot == 'centre':
+        o = o - (.5*a+.5*b+.5*c)
+    elif not pivot == 'corner':
+        raise ValueError('pivot must be centre or corner')
 
     vertices = [o,o+a,
                o,o+b,
@@ -114,9 +125,3 @@ def _make_box_vertices(x,y,z,a,b,c):
     return [v.tolist() for v in vertices]
 def _make_box_colors(color):
     return [colors.to_hex(color)]*24
-def _make_line_vertices(start,end):
-    """ make box vertices """
-    vertices = [start,end]
-    return [v.tolist() for v in vertices]
-def _make_line_colors(color):
-    return [colors.to_hex(color)]*2

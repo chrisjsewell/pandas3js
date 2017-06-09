@@ -76,9 +76,9 @@ def create_gui(change_func, config_dict=None,
 
     >>> import pandas3js as pjs
     >>> import pandas as pd
-    >>> config_data = {'1':{'id':[0],'x':[0],'y':[0],'z':[0],
+    >>> config_data = {'1':{'id':[0],'position':[(0,0,0)],
     ...                     'c1':'red','c2':'blue'},
-    ...                '2':{'id':[0],'x':[1],'y':[2],'z':[3],
+    ...                '2':{'id':[0],'position':[(1,2,3)],
     ...                     'c1':'red','c2':'blue'}}
     ...
     >>> def change_func(cdata,options):
@@ -86,7 +86,7 @@ def create_gui(change_func, config_dict=None,
     ...     ctype = options.get('color','c1')
     ...     indf['color'] = indf[ctype]
     ...     indf['label'] = 'myobject'
-    ...     return indf[['id','x','y','z','color','label']]
+    ...     return indf[['id','position','color','label']]
     ...
     >>> gui, collect = pjs.create_gui(change_func,config_data,
     ...                     opts_dd={'color':['c1','c2']},
@@ -102,12 +102,10 @@ def create_gui(change_func, config_dict=None,
     label_transparency                                   1
     label_visible                                    False
     otype                 pandas3js.models.idobject.Sphere
+    position                               (1.0, 2.0, 3.0)
     radius                                               1
     transparency                                         1
     visible                                           True
-    x                                                    1
-    y                                                    2
-    z                                                    3
     Name: 0, dtype: object
     >>> config_select = gui.children[0].children[0].children[0].children[0]
     >>> pjs.utils.obj_to_str(config_select)
@@ -121,12 +119,10 @@ def create_gui(change_func, config_dict=None,
     label_transparency                                   1
     label_visible                                    False
     otype                 pandas3js.models.idobject.Sphere
+    position                               (0.0, 0.0, 0.0)
     radius                                               1
     transparency                                         1
     visible                                           True
-    x                                                    0
-    y                                                    0
-    z                                                    0
     Name: 0, dtype: object
     >>> color_select = gui.children[0].children[1].children[0]
     >>> pjs.utils.obj_to_str(color_select)
@@ -140,12 +136,10 @@ def create_gui(change_func, config_dict=None,
     label_transparency                                   1
     label_visible                                    False
     otype                 pandas3js.models.idobject.Sphere
+    position                               (0.0, 0.0, 0.0)
     radius                                               1
     transparency                                         1
     visible                                           True
-    x                                                    0
-    y                                                    0
-    z                                                    0
     Name: 0, dtype: object
     
     """

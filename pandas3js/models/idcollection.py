@@ -296,7 +296,7 @@ class GeometricCollection(IDCollection):
     --------
     
     >>> test_dict = {'id':[0,1,2],
-    ...  'x':[0,-1,1],'y':[0,-1,1],'z':[0,0,1],
+    ...  'position':[(0,0,0),(-1,-1,0),(1,1,1)],
     ... 'color':['red']*3,'transparency':[1]*3,'radius':[1]*3,
     ... 'label':['H']*3, 'otype':['pandas3js.Sphere']*3}
     ...
@@ -304,12 +304,12 @@ class GeometricCollection(IDCollection):
     
     >>> c = GeometricCollection()
     >>> c.change_by_df(df, otype_column='otype')
-    >>> trait_df = c.trait_df(traits=['id', 'x','y','z','radius','label'])
+    >>> trait_df = c.trait_df(traits=['id', 'position','radius','label'])
     >>> trait_df
-       id label                             otype  radius    x    y    z
-    0   0     H  pandas3js.models.idobject.Sphere     1.0  0.0  0.0  0.0
-    1   1     H  pandas3js.models.idobject.Sphere     1.0 -1.0 -1.0  0.0
-    2   2     H  pandas3js.models.idobject.Sphere     1.0  1.0  1.0  1.0
+       id label                             otype           position  radius
+    0   0     H  pandas3js.models.idobject.Sphere    (0.0, 0.0, 0.0)     1.0
+    1   1     H  pandas3js.models.idobject.Sphere  (-1.0, -1.0, 0.0)     1.0
+    2   2     H  pandas3js.models.idobject.Sphere    (1.0, 1.0, 1.0)     1.0
     
     >>> trait_df.radius = 2.5
     >>> trait_df = trait_df.loc[[0,2]]

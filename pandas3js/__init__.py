@@ -8,7 +8,7 @@
 __version__ = '0.1.4'
 
 from pandas3js.models.idobject import (IDObject, GeometricObject, 
-                                        Sphere, WireBox, Line)
+                                        Sphere, BoxWire, Line)
 from pandas3js.models.idcollection import IDCollection, GeometricCollection
 
 from pandas3js.views.jsmesh import create_jsmesh_view, create_jslabelmesh_view

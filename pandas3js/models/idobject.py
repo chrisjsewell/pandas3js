@@ -33,9 +33,10 @@ class Color(trait.TraitType):
     
     >>> try:
     ...     color.validate(object, 1)
-    ... except Exception as err:
-    ...     print(err)
-    The 'None' trait of a type instance must be a color_like value: hex str, rgb/rgba tuple (0 to 1) or valid html name, but a value of 1 <type 'int'> was specified.
+    ...     print('validated')
+    ... except:
+    ...     print('not validated')
+    not validated
         
     """
 
@@ -141,10 +142,11 @@ class BoxWire(GeometricObject):
     >>> box.a
     (1.0, 0.0, 0.0)
 
-    >>> box.pivot = ''
-    Traceback (most recent call last):
-     ...
-    TraitError: pivot must be at the centre or corner
+    >>> try:
+    ...     box.pivot = ''
+    ... except Exception as err:
+    ...     print(err)
+    pivot must be at the centre or corner
         
     """
     a = vector3(default=(1,0,0),help='box vector a')

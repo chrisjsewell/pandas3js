@@ -33,10 +33,9 @@ class Color(trait.TraitType):
     
     >>> try:
     ...     color.validate(object, 1)
-    ...     print(True)
-    ... except:
-    ...     print(False)
-    False
+    ... except Exception as err:
+    ...     print(err)
+    The 'None' trait of a type instance must be a color_like value: hex str, rgb/rgba tuple (0 to 1) or valid html name, but a value of 1 <type 'int'> was specified.
         
     """
 
@@ -95,10 +94,11 @@ class Sphere(GeometricObject):
     >>> sphere.radius
     1.0
 
-    >>> sphere.radius = -1
-    Traceback (most recent call last):
-     ...
-    TraitError: The value of the 'radius' trait of a Sphere instance should not be less than 0.0, but a value of -1.0 was specified
+    >>> try:
+    ...     sphere.radius = -1
+    ... except Exception as err:
+    ...     print(err)
+    The value of the 'radius' trait of a Sphere instance should not be less than 0.0, but a value of -1.0 was specified
     
 
     """
@@ -117,10 +117,11 @@ class Line(GeometricObject):
     >>> line.end
     (1.0, 1.0, 1.0)
 
-    >>> line.linewidth = -1
-    Traceback (most recent call last):
-     ...
-    TraitError: The value of the 'linewidth' trait of a Line instance should not be less than 0.0, but a value of -1.0 was specified
+    >>> try:
+    ...     line.linewidth = -1
+    ... except Exception as err:
+    ...     print(err)
+    The value of the 'linewidth' trait of a Line instance should not be less than 0.0, but a value of -1.0 was specified
         
     """
     

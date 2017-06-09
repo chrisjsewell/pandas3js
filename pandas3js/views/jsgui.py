@@ -89,7 +89,8 @@ def create_gui(change_func, config_dict=None,
     ...     return indf[['id','x','y','z','color','label']]
     ...
     >>> gui, collect = pjs.create_gui(change_func,config_data,
-    ...                     opts_dd={'color':['c1','c2']})
+    ...                     opts_dd={'color':['c1','c2']},
+    ...                     opts_slide={'dummy':[1,2,3]})
     ...
     >>> [pjs.utils.obj_to_str(c) for c in gui.children]
     ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer']

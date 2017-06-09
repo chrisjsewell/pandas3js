@@ -8,7 +8,7 @@ import traitlets as trait
 import pandas as pd
 import numpy as np
 
-from pandas3js import IDObject, GeometricObject
+from pandas3js.models.idobject import IDObject, GeometricObject
 from pandas3js.utils import obj_to_str, str_to_obj
 
 class UniqueIDObjects(trait.TraitType):
@@ -40,8 +40,9 @@ class IDCollection(trait.HasTraits):
     Examples
     --------
     
+    >>> from pandas3js.models import IDCollection
     >>> c = IDCollection()
-    >>> from pandas3js import IDObject
+    >>> from pandas3js.models import IDObject
     >>> c.add_object(IDObject(id=1))
     >>> c.add_object(IDObject(id=2))
     >>> c.ids
@@ -59,7 +60,8 @@ class IDCollection(trait.HasTraits):
     [1]
         
     >>> obj  = IDObject(id=3)
-    >>> obj.add_traits(tname=trait.Unicode('test'))
+    >>> from traitlets import Unicode
+    >>> obj.add_traits(tname=Unicode('test'))
     >>> c.add_object(obj)
     >>> df = c.trait_df()
     >>> df
@@ -142,7 +144,7 @@ class IDCollection(trait.HasTraits):
         return idobjects
             
     def change_by_df(self, df, columns=None, 
-                     otype_default='pandas3js.IDObject', 
+                     otype_default='pandas3js.models.IDObject', 
                      otype_column=None,
                     remove_missing=False):
         """ change collection by datafame of idobject traits
@@ -298,7 +300,7 @@ class GeometricCollection(IDCollection):
     >>> test_dict = {'id':[0,1,2],
     ...  'position':[(0,0,0),(-1,-1,0),(1,1,1)],
     ... 'color':['red']*3,'transparency':[1]*3,'radius':[1]*3,
-    ... 'label':['H']*3, 'otype':['pandas3js.Sphere']*3}
+    ... 'label':['H']*3, 'otype':['pandas3js.models.Sphere']*3}
     ...
     >>> df = pd.DataFrame(test_dict)
     

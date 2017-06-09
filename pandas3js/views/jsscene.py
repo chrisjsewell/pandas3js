@@ -27,7 +27,7 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
     Examples
     --------
     
-    >>> from pandas3js import GeometricCollection, Sphere
+    >>> from pandas3js.models import GeometricCollection, Sphere
     >>> collection = GeometricCollection()
     >>> scene = create_js_scene_view(collection,add_objects=True,add_labels=True)
     >>> [type(child) for child in scene.children]

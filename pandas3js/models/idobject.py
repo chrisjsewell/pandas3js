@@ -83,6 +83,24 @@ class GeometricObject(IDObject):
     label_color = Color('red')
     label_transparency = trait.CFloat(1,min=0.0,max=1.0)
 
+def default_viewmap(label_height=None):
+    """ a wrapper to signal that all
+    subclass attributes should be directly linked to 
+    the default view mapping
+    
+    Properties
+    ----------
+    label_height : None or str
+        the attribute to link to label height
+        if None, no label is created
+    
+    """
+    def decorator(klass):
+        setattr(klass, '_use_default_viewmap',label_height)
+        return klass
+    return decorator
+
+@default_viewmap('radius')
 class Sphere(GeometricObject):
     """ a spherical object
 
@@ -104,7 +122,68 @@ class Sphere(GeometricObject):
 
     """
     radius = trait.CFloat(1,min=0.)
+
+# TODO orientation of default geometries
+@default_viewmap('height')
+class Box(GeometricObject):
+    """ a spherical object
+
+    Examples
+    --------
     
+    >>> object = Box()
+    >>> object.position
+    (0.0, 0.0, 0.0)
+
+    """
+    width = trait.CFloat(1)
+    height = trait.CFloat(1)
+    depth = trait.CFloat(1)
+
+@default_viewmap('radius')
+class Octahedron(GeometricObject):
+    """ a spherical object
+
+    Examples
+    --------
+    
+    >>> object = Circle()
+    >>> object.position
+    (0.0, 0.0, 0.0)
+
+    """
+    radius = trait.CFloat(1)
+    detail = trait.CFloat(0)    
+
+@default_viewmap('radius')
+class Icosahedron(GeometricObject):
+    """ a spherical object
+
+    Examples
+    --------
+    
+    >>> object = Circle()
+    >>> object.position
+    (0.0, 0.0, 0.0)
+
+    """
+    radius = trait.CFloat(1)
+    detail = trait.CFloat(0)    
+
+@default_viewmap('radius')
+class Circle(GeometricObject):
+    """ a spherical object
+
+    Examples
+    --------
+    
+    >>> object = Circle()
+    >>> object.position
+    (0.0, 0.0, 0.0)
+
+    """
+    radius = trait.CFloat(1)
+    segments = trait.CFloat(36)    
 
 class Line(GeometricObject):
     """ a line object
@@ -130,13 +209,14 @@ class Line(GeometricObject):
     end_color = Color('red')
     linewidth = trait.CFloat(1,min=0.0)
 
-class BoxWire(GeometricObject):
+# TDOD only development version of PlainGeometry exposes face colors
+class TriclinicSolid(GeometricObject):
     """ a wireframe object
 
     Examples
     --------
     
-    >>> box = BoxWire()
+    >>> box = TriclinicSolid()
     >>> box.position
     (0.0, 0.0, 0.0)
     >>> box.a
@@ -152,7 +232,6 @@ class BoxWire(GeometricObject):
     a = vector3(default=(1,0,0),help='box vector a')
     b = vector3(default=(0,1,0),help='box vector b')
     c = vector3(default=(0,0,1),help='box vector c')
-    linewidth = trait.CFloat(1)
     pivot = trait.CUnicode('centre',help='pivot about centre or corner')
     
     @trait.validate('pivot')
@@ -161,6 +240,28 @@ class BoxWire(GeometricObject):
         if pivot not in ['centre','corner']:
             raise trait.TraitError('pivot must be at the centre or corner')
         return proposal['value']        
+
+class TriclinicWire(TriclinicSolid):
+    """ a wireframe object
+
+    Examples
+    --------
+    
+    >>> box = TriclinicWire()
+    >>> box.position
+    (0.0, 0.0, 0.0)
+    >>> box.a
+    (1.0, 0.0, 0.0)
+
+    >>> try:
+    ...     box.linewidth = ''
+    ... except:
+    ...     print('not valid')
+    not valid
+        
+    """
+    linewidth = trait.CFloat(1)
+
     
     
     

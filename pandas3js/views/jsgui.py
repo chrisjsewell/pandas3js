@@ -15,7 +15,7 @@ def _create_callback(renderer, config_dict, select, ddown,
                 geometry_df = change_func(None, all_options)
                 
             gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                        otype_default='pandas3js.Sphere',
+                        otype_default='pandas3js.models.Sphere',
                                  remove_missing=True)        
     return handle_ddown
 
@@ -88,7 +88,7 @@ def create_gui(change_func, config_dict=None,
     ...     indf['label'] = 'myobject'
     ...     return indf[['id','position','color','label']]
     ...
-    >>> gui, collect = pjs.create_gui(change_func,config_data,
+    >>> gui, collect = pjs.views.create_gui(change_func,config_data,
     ...                     opts_dd={'color':['c1','c2']},
     ...                     opts_slide={'dummy':[1,2,3]})
     ...
@@ -144,10 +144,10 @@ def create_gui(change_func, config_dict=None,
     
     """
     ## initialise renderer
-    gcollect = pjs.GeometricCollection()
-    scene = pjs.create_js_scene_view(gcollect,
+    gcollect = pjs.models.GeometricCollection()
+    scene = pjs.views.create_js_scene_view(gcollect,
                     add_objects=add_objects,add_labels=add_labels)
-    camera, renderer = pjs.create_jsrenderer(scene,view=view,near=near,
+    camera, renderer = pjs.views.create_jsrenderer(scene,view=view,near=near,
                                 height=height,width=width, background=background)
          
     ## initialise geometry in renderer                    
@@ -175,7 +175,7 @@ def create_gui(change_func, config_dict=None,
     with renderer.hold_trait_notifications():
         geometry_df = change_func(init_data,all_options)
         gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                    otype_default='pandas3js.Sphere',
+                    otype_default='pandas3js.models.Sphere',
                     remove_missing=True)      
     
     ## Create controls and callbacks
@@ -189,7 +189,7 @@ def create_gui(change_func, config_dict=None,
             with renderer.hold_trait_notifications():
                 geometry_df = change_func(config_dict[change.new],all_options)
                 gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                            otype_default='pandas3js.Sphere',
+                            otype_default='pandas3js.models.Sphere',
                             remove_missing=True)  
         select.observe(handle_slider,names='value')
         controls.append(select)
@@ -207,19 +207,26 @@ def create_gui(change_func, config_dict=None,
         toggle.observe(handle_toggle,names='value')
         controls.append(toggle)
     
-    # a zoom slider
+    # zoom sliders
     top,bottom,left,right = view
-    axiszoom = widgets.FloatRangeSlider(
-        value=[left,right],
-        min=left,
-        max=right,
-        step=abs(right-left)/100.,
-        description='axis range',
-        readout_format='.1f',
+    axiszoom = widgets.FloatSlider(
+        value=0,
+        min=-10,
+        max=10,
+        step=0.1,
+        description='zoom',
         continuous_update=True,)
     def handle_axiszoom(change):
-        camera.left =  camera.bottom = change.new[0]
-        camera.right = camera.top = change.new[1]
+        if change.new>1:
+            zoom = 1./change.new
+        elif change.new<-1:
+            zoom = -change.new
+        else:
+            zoom = 1
+        camera.left = zoom * left
+        camera.right = zoom * right
+        camera.top = zoom * top
+        camera.bottom = zoom * bottom
     axiszoom.observe(handle_axiszoom,names='value')
     
     # add additional options

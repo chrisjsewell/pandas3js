@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
+
 # python 3 to 2 compatibility
 try:
     basestring
@@ -39,7 +41,7 @@ def create_jsmesh_view(gobject,mapping=None):
     --------
     
     >>> import pandas3js as pjs
-    >>> sphere = pjs.Sphere()
+    >>> sphere = pjs.models.Sphere()
     >>> mesh = create_jsmesh_view(sphere)
     >>> mesh.position
     [0.0, 0.0, 0.0]
@@ -54,14 +56,29 @@ def create_jsmesh_view(gobject,mapping=None):
     >>> str(mesh.material.color)
     '#ffffff'
     
-    >>> lmesh = create_jsmesh_view(pjs.Line())
-    >>> bmesh = create_jsmesh_view(pjs.BoxWire())
+    >>> lmesh = create_jsmesh_view(pjs.models.Box())
+    >>> lmesh = create_jsmesh_view(pjs.models.Line())
+    >>> bsmesh = create_jsmesh_view(pjs.models.TriclinicSolid())
+    >>> bwmesh = create_jsmesh_view(pjs.models.TriclinicWire())
+    >>> cmesh = create_jsmesh_view(pjs.models.Circle())
+    >>> mesh = create_jsmesh_view(pjs.models.Octahedron())
+    >>> mesh = create_jsmesh_view(pjs.models.Icosahedron())
     
     """
     class_str = obj_to_str(gobject)
-    if not class_str in gobject_jsmapping:
+    if hasattr(gobject, '_use_default_viewmap'):
+        class_map = copy.deepcopy(gobject_jsmapping['default'])
+        class_map['grep'] = 'pythreejs.{}Geometry'.format(class_str.split('.')[-1])
+        # directly link all traits to geometry object traits
+        for trait_name in gobject.class_own_traits():
+            class_map['gdmap'][trait_name] = trait_name
+        if gobject._use_default_viewmap is not None:
+            class_map['show_label']=True
+            class_map['label_height'] = gobject._use_default_viewmap
+    elif not class_str in gobject_jsmapping:
         raise ValueError('No pythreejs mapping available for {}'.format(class_str))
-    class_map = gobject_jsmapping[class_str]
+    else:
+        class_map = gobject_jsmapping[class_str]
     
     # create geometry
     geometry = str_to_obj(class_map['grep'])()
@@ -115,7 +132,7 @@ def create_jslabelmesh_view(gobject, mapping=None):
     --------
     
     >>> import pandas3js as pjs
-    >>> sphere = pjs.Sphere()
+    >>> sphere = pjs.models.Sphere()
     >>> lmesh = create_jslabelmesh_view(sphere)
     >>> lmesh.position
     [0.0, 0.0, 0.0]
@@ -138,9 +155,19 @@ def create_jslabelmesh_view(gobject, mapping=None):
     
     """
     class_str = obj_to_str(gobject)
-    if not class_str in gobject_jsmapping:
+    if hasattr(gobject, '_use_default_viewmap'):
+        class_map = copy.deepcopy(gobject_jsmapping['default'])
+        class_map['grep'] = 'pythreejs.'+class_str.split('.')[-1]
+        # directly link all traits to geometry object
+        for trait_name in gobject.class_own_traits():
+            class_map['gdmap'][trait_name] = trait_name
+        if gobject._use_default_viewmap is not None:
+            class_map['show_label']=True
+            class_map['label_height'] = gobject._use_default_viewmap
+    elif not class_str in gobject_jsmapping:
         raise ValueError('No pythreejs mapping available for {}'.format(class_str))
-    class_map = gobject_jsmapping[class_str]
+    else:
+        class_map = gobject_jsmapping[class_str]
     
     text_map = js.TextTexture(string=gobject.label, 
                         color=colors.to_hex(gobject.label_color), 

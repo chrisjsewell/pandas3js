@@ -14,11 +14,8 @@ Employing a meta Model/View design; Unique geometry objects are stored in a ``Ge
 which can be viewed as (and modified by) a ``pandas.DataFrame``, containing objects (by row) and traits/object_type (by column). 
 The ``GeometryCollection`` (and its objects) can then be directionally synced to a ``pythreejs.Scene`` (and ``pythreejs.3DObjects``) 
 **view**, *via* a json mapping specification.
-    
-Examples
----------
 
-`pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.ipynb>`_
+From: `pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.ipynb>`_
 
 .. image:: https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.gif
 

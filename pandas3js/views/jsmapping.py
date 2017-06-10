@@ -91,35 +91,20 @@ gobject_jsmapping = {
      'label_height':None,
     },
 'pandas3js.models.idobject.TriclinicSolid':
-    {'grep':'pythreejs.PlainGeometry',
-     'gvar':{'faces':[
-            [0, 1, 3],
-            [0, 2, 3],
-            [0, 2, 4],
-            [2, 4, 6],
-            [0, 1, 4],
-            [1, 4, 5],
-            [2, 3, 6],
-            [3, 6, 7],
-            [1, 3, 5],
-            [3, 5, 7],
-            [4, 5, 6],
-            [5, 6, 7]
+    {'grep':'pythreejs.FaceGeometry',
+     'gvar':{'facen':[
+         [0,1,3,2],[0,4,6,2],[0,1,5,4],
+         [6,7,3,2],[6,7,5,4],[7,5,1,3]
         ]},
      'gdmap':{}, 
      'gfmap':{'vertices':{'vars':('position','a','b','c','pivot'),
-                          'func':'pandas3js.views.jsmapping._make_sbox_vertices'},
-              'colors':{'vars':('color',),
-                        'func':'pandas3js.views.jsmapping._make_sbox_colors'}},
-# Not in current version
-              # 'faceColors':{'vars':('color',),
-              #           'func':'pandas3js.views.jsmapping._make_box_fcolors'}},
-     
+                          'func':'pandas3js.views.jsmapping._make_sbox_vertices'}},
      'matrep':'pythreejs.LambertMaterial', 
-     'matvar':{'vertexColors':'VertexColors'},
+     'matvar':{'vertexColors':'FaceColors'},
      'matdmap':{'visible':'visible','opacity':'transparency'},
      'matfmap':{'transparent':{'vars':('transparency',),
-                               'func':'pandas3js.views.jsmapping._transparent'}},
+                               'func':'pandas3js.views.jsmapping._transparent'},
+              'color':{'vars':('color',),'func':'matplotlib.colors.to_hex'}},     
 
      'meshrep':'pythreejs.Mesh',
      'meshvar':{},
@@ -179,10 +164,7 @@ def _make_sbox_vertices(position,a,b,c,pivot):
     elif not pivot == 'corner':
         raise ValueError('pivot must be centre or corner')
 
-    vertices = [o,o+c,o+b,o+b+c,o+a,
-                o+a+c,o+a+b,o+a+b+c]
-    return [v.tolist() for v in vertices]
-
-def _make_sbox_colors(color):
-    return [colors.to_hex(color)]*36
+    vertices = np.array([o,o+c,o+b,o+b+c,o+a,
+                o+a+c,o+a+b,o+a+b+c])
+    return vertices.flatten().tolist()
     

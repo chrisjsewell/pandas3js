@@ -9,6 +9,8 @@ import os, sys, inspect
 import importlib
 import re
 
+import numpy as np
+
 # python 2/3 compatibility
 try:
     basestring
@@ -122,3 +124,30 @@ def natural_keys(text):
     
     """
     return [_atoi(c) for c in re.split('(\d+)',str(text))]
+    
+def tuple_to_df(df,col_name,value,index=None):
+    """ a helper function for setting pandas dataframe 
+    cell values as tuples
+    
+    df : pandas.DataFrame
+    col_name : string
+        name of column (can be new)
+    value : tuple
+    index : any
+        if None set whole column
+    
+    """
+    if col_name not in df:
+        df[col_name] = np.nan
+    df[col_name] = df[col_name].astype(object)
+    if isinstance(index,list):
+        for i in index:
+            df.set_value(i,col_name,value)
+    elif index is not None:
+        df.set_value(index,col_name,value)
+    else:
+        for i in df.index:
+            df.set_value(i,col_name,value)
+    return
+    
+    

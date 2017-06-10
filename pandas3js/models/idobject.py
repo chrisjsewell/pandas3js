@@ -185,6 +185,27 @@ class Circle(GeometricObject):
     radius = trait.CFloat(1)
     segments = trait.CFloat(36)    
 
+class Plane(GeometricObject):
+    """ a plane object
+
+    Examples
+    --------
+    
+    >>> object = Plane()
+    >>> object.position
+    (0.0, 0.0, 0.0)
+
+    """
+    normal = vector3(default=(0,0,1),help='the normal vector of the plane')
+    width = trait.CFloat(1,min=0.0)
+
+    @trait.validate('normal')
+    def _valid_normal(self, proposal):
+        x,y,z = proposal['value']
+        if x==0 and y==0 and z==0:
+            raise trait.TraitError('normal cannot be (0,0,0)')
+        return proposal['value']        
+    
 class Line(GeometricObject):
     """ a line object
 

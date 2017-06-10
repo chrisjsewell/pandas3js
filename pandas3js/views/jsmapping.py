@@ -114,6 +114,27 @@ gobject_jsmapping = {
      'show_label':True,                             
      'label_height':1,
     },
+'pandas3js.models.idobject.Plane':
+    {'grep':'pythreejs.FaceGeometry',
+     'gvar':{'face4':[0,1,2,3]},
+     'gdmap':{}, 
+     'gfmap':{'vertices':{'vars':('position','normal','width'),
+                          'func':'pandas3js.views.jsmapping._make_plane_vertices'}},
+     'matrep':'pythreejs.LambertMaterial', 
+     'matvar':{'vertexColors':'FaceColors'},
+     'matdmap':{'visible':'visible','opacity':'transparency'},
+     'matfmap':{'transparent':{'vars':('transparency',),
+                               'func':'pandas3js.views.jsmapping._transparent'},
+              'color':{'vars':('color',),'func':'matplotlib.colors.to_hex'}},     
+
+     'meshrep':'pythreejs.Mesh',
+     'meshvar':{},
+     'meshdmap':{},
+     'meshfmap':{},
+
+     'show_label':True,                             
+     'label_height':1,
+    },
 }    
 
 # functions for mapping
@@ -167,4 +188,29 @@ def _make_sbox_vertices(position,a,b,c,pivot):
     vertices = np.array([o,o+c,o+b,o+b+c,o+a,
                 o+a+c,o+a+b,o+a+b+c])
     return vertices.flatten().tolist()
-    
+
+def _make_plane_vertices(position,normal,width):
+    """make plane vertices"""    
+
+    a,b,c = normal
+
+    if c==0:
+        if b==0:
+            x1,y1,z1 = 0, 1, 1
+        else:
+            x1,z1 = 1, 1
+            y1 = (- a*x1 - c*z1)/float(b)
+    else:
+        x1,y1 = 1, 1
+        z1 = (- a*x1 - b*y1)/float(c)
+    p1 = np.array((x1,y1,z1))/np.linalg.norm((x1,y1,z1))
+    p2 = np.cross(normal/np.linalg.norm(normal),p1/np.linalg.norm(p1))
+
+    position = np.array(position)
+    v1 = p1*.5*width + position
+    v2 = p2*.5*width + position
+    v3 = -p1*.5*width + position
+    v4 = -p2*.5*width + position
+
+    vertices = np.array([v1,v2,v3,v4])
+    return vertices.flatten().tolist()   

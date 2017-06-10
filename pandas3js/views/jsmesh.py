@@ -63,6 +63,7 @@ def create_jsmesh_view(gobject,mapping=None):
     >>> cmesh = create_jsmesh_view(pjs.models.Circle())
     >>> mesh = create_jsmesh_view(pjs.models.Octahedron())
     >>> mesh = create_jsmesh_view(pjs.models.Icosahedron())
+    >>> mesh = create_jsmesh_view(pjs.models.Plane())
     
     """
     class_str = obj_to_str(gobject)

@@ -102,7 +102,7 @@ def create_gui(change_func, config_dict=None,
     ...                     opts_slide={'dummy':[1,2,3]})
     ...
     >>> [pjs.utils.obj_to_str(c) for c in gui.children]
-    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer', 'ipywidgets.widgets.widget_string.HTML']
+    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer', 'ipywidgets.widgets.widget_string.HTMLMath']
     >>> collect.trait_df().loc[0]
     color                                              red
     id                                                   0

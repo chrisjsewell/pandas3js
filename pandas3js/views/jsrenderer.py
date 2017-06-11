@@ -4,13 +4,20 @@
 import pythreejs as js
 
 def create_jsrenderer(scene, height=400,width=400, background='gray',
-                      view=(10,-10, -10, 10), near=-10):
+                      orthographic=True, camera_position=(0,0,-10),
+                      view=(10,-10, -10, 10),fov=50):
     """
     
     Properties
     ----------
+    orthographic : bool
+        use orthographic camera (True) or perspective (False) 
+    camera_position : tuple
+        position of camera in scene
     view : tuple
-        view extents: (top, bottom, left, right)
+        view extents: (top, bottom, left, right) (orthographic only)
+    fov : float
+        camera field of view (perspective only)
     
     Returns
     -------
@@ -29,13 +36,17 @@ def create_jsrenderer(scene, height=400,width=400, background='gray',
     <class 'pythreejs.pythreejs.OrthographicCamera'>
     
     """
-    top, bottom, left, right = view
-    camera = js.OrthographicCamera(position=[0,0,1],
-                                top=top, bottom=bottom, left=left, right=right,
-                                near=near,far=2000,
-                                children=[
-                                    js.DirectionalLight(color='white', 
-                                        position=[3, 5, 1], intensity=0.5)])
+    
+    if orthographic:
+        top, bottom, left, right = view
+        camera = js.OrthographicCamera(position=camera_position,up=[0, 0, 1],
+                                    top=top, bottom=bottom, left=left, right=right,
+                                    near=.1,far=2000)
+    else:
+        camera = js.PerspectiveCamera(position=camera_position,up=[0, 0, 1],
+                                    far=2000,near=.1,fov=fov,aspect=width/float(height))
+    camera.children = [js.DirectionalLight(color='white', 
+                                            position=[3, 5, 1], intensity=0.5)]
     control = js.OrbitControls(controlling=camera)
     renderer = js.Renderer(camera=camera,background=background,background_opacity=.1,
                         height=str(height),width=str(width),

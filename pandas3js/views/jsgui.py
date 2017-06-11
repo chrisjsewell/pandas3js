@@ -23,7 +23,8 @@ def create_gui(change_func, config_dict=None,
                opts_dd=None,dd_min=3,
                opts_slide=None, opts_color=None,
                height=400,width=400, background='gray',
-               view=(10,-10,-10,10),near=-10,
+               orthographic=True, camera_position=[0,0,-10],
+               view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
                otype_column=None):
     """ creates simple gui to handle geometric configuration changes,
@@ -52,10 +53,14 @@ def create_gui(change_func, config_dict=None,
         renderer width
     background : str
         renderer background color (html)
+    orthographic : bool
+        use orthographic camera (True) or perspective (False) 
+    camera_position : tuple
+        position of camera in scene
     view : tuple
-        initial view extents (top,bottom,left,right)
-    near : int
-        camera distance from origin    
+        initial view extents (top,bottom,left,right) (orthographic only)
+    fov : float
+        camera field of view (perspective only)
     add_objects : bool
         add objects to scene
     add_labels : bool
@@ -107,7 +112,7 @@ def create_gui(change_func, config_dict=None,
     transparency                                         1
     visible                                           True
     Name: 0, dtype: object
-    >>> config_select = gui.children[0].children[0].children[0].children[0]
+    >>> config_select = gui.children[0].children[0].children[0]
     >>> pjs.utils.obj_to_str(config_select)
     'ipywidgets.widgets.widget_selection.SelectionSlider'
     >>> config_select.value = '1'
@@ -147,7 +152,9 @@ def create_gui(change_func, config_dict=None,
     gcollect = pjs.models.GeometricCollection()
     scene = pjs.views.create_js_scene_view(gcollect,
                     add_objects=add_objects,add_labels=add_labels)
-    camera, renderer = pjs.views.create_jsrenderer(scene,view=view,near=near,
+    camera, renderer = pjs.views.create_jsrenderer(scene,
+                                orthographic=orthographic, camera_position=camera_position,
+                                view=view,fov=fov,
                                 height=height,width=width, background=background)
          
     ## initialise geometry in renderer                    
@@ -207,27 +214,29 @@ def create_gui(change_func, config_dict=None,
         toggle.observe(handle_toggle,names='value')
         controls.append(toggle)
     
-    # zoom sliders
-    top,bottom,left,right = view
-    axiszoom = widgets.FloatSlider(
-        value=0,
-        min=-10,
-        max=10,
-        step=0.1,
-        description='zoom',
-        continuous_update=True,)
-    def handle_axiszoom(change):
-        if change.new>1:
-            zoom = 1./change.new
-        elif change.new<-1:
-            zoom = -change.new
-        else:
-            zoom = 1
-        camera.left = zoom * left
-        camera.right = zoom * right
-        camera.top = zoom * top
-        camera.bottom = zoom * bottom
-    axiszoom.observe(handle_axiszoom,names='value')
+    # zoom sliders for orthographic
+    if orthographic:
+        top,bottom,left,right = view
+        axiszoom = widgets.FloatSlider(
+            value=0,
+            min=-10,
+            max=10,
+            step=0.1,
+            description='zoom',
+            continuous_update=True,)
+        def handle_axiszoom(change):
+            if change.new>1:
+                zoom = 1./change.new
+            elif change.new<-1:
+                zoom = -change.new
+            else:
+                zoom = 1
+            camera.left = zoom * left
+            camera.right = zoom * right
+            camera.top = zoom * top
+            camera.bottom = zoom * bottom
+        axiszoom.observe(handle_axiszoom,names='value')
+        controls.append(axiszoom)
     
     # add additional options
     opt_selectors = []
@@ -269,14 +278,12 @@ def create_gui(change_func, config_dict=None,
     
     if opt_selectors:
         options = widgets.Tab(
-            children=[widgets.VBox([widgets.HBox(controls),
-                                   axiszoom]), 
+            children=[widgets.VBox(controls), 
                       widgets.VBox(opt_selectors)])
         options.set_title(0, 'Main Controls')
         options.set_title(1, 'Other Options')
     else:
-        options = widgets.VBox([widgets.HBox(controls),
-                               axiszoom])
+        options = widgets.VBox(controls)
     
     return widgets.VBox([options,
                          renderer]), gcollect

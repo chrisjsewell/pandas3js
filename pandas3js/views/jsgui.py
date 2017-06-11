@@ -27,7 +27,7 @@ def create_gui(change_func, config_dict=None,
                orthographic=False, camera_position=[0,0,-10],
                view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
-               show_object_info=True,
+               show_object_info=False,
                otype_column=None):
     """ creates simple gui to handle geometric configuration changes,
     with a callback to update geometry according to options 
@@ -102,7 +102,7 @@ def create_gui(change_func, config_dict=None,
     ...                     opts_slide={'dummy':[1,2,3]})
     ...
     >>> [pjs.utils.obj_to_str(c) for c in gui.children]
-    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer', 'ipywidgets.widgets.widget_string.HTMLMath']
+    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer']
     >>> collect.trait_df().loc[0]
     color                                              red
     id                                                   0
@@ -298,14 +298,18 @@ def create_gui(change_func, config_dict=None,
         click_picker = tjs.Picker(root=scene.children[0], event='mousemove')
         infobox = widgets.HTMLMath()
         def change_info(change):
-            infobox.value = 'Object Coordinate: ({1:.3f}, {2:.3f}, {3:.3f})<br>{0}'.format(
-                                click_picker.object.other_info, *click_picker.object.position)
+            if click_picker.object:
+                infobox.value = 'Object Coordinate: ({1:.3f}, {2:.3f}, {3:.3f})<br>{0}'.format(
+                                    click_picker.object.other_info, *click_picker.object.position)
+            else:
+                infobox.value = ''
         click_picker.observe(change_info, names=['object'])
         renderer.controls = renderer.controls + [click_picker]
 
-        return widgets.VBox([options,
-                             renderer,
-                             infobox]), gcollect
+        return (widgets.VBox([options,
+                             widgets.HBox([renderer,infobox])]), 
+                gcollect)
                              
-    return widgets.VBox([options,
-                         renderer]), gcollect
+    return (widgets.VBox([options,
+                         renderer]), 
+           gcollect)

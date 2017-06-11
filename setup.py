@@ -44,6 +44,6 @@ with io.open('README.rst') as readme:
         keywords='pythreejs, traitlets, graphics, 3D, pandas, ipython, jupyter, three.js, webgl',
         zip_safe=True,
         packages = find_packages(),
-        package_data={'': ['*.csv']},
+        package_data={'': ['*.csv','*.json']},
     )
 

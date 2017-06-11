@@ -1,4 +1,5 @@
 import ipywidgets as widgets
+import pythreejs as tjs
 
 import pandas3js as pjs
 
@@ -23,9 +24,10 @@ def create_gui(change_func, config_dict=None,
                opts_dd=None,dd_min=3,
                opts_slide=None, opts_color=None,
                height=400,width=400, background='gray',
-               orthographic=True, camera_position=[0,0,-10],
+               orthographic=False, camera_position=[0,0,-10],
                view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
+               show_object_info=True,
                otype_column=None):
     """ creates simple gui to handle geometric configuration changes,
     with a callback to update geometry according to options 
@@ -65,6 +67,8 @@ def create_gui(change_func, config_dict=None,
         add objects to scene
     add_labels : bool
         add object labels to scene
+    show_object_info : bool
+        if True, show coordinate of object under mouse (currently only works for Perspective)
     otype_column : str
         column name for object type 
         in dataframe from change_func
@@ -98,7 +102,7 @@ def create_gui(change_func, config_dict=None,
     ...                     opts_slide={'dummy':[1,2,3]})
     ...
     >>> [pjs.utils.obj_to_str(c) for c in gui.children]
-    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer']
+    ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer', 'ipywidgets.widgets.widget_string.HTML']
     >>> collect.trait_df().loc[0]
     color                                              red
     id                                                   0
@@ -285,5 +289,19 @@ def create_gui(change_func, config_dict=None,
     else:
         options = widgets.VBox(controls)
     
+    # TDOD doesn't work for orthographic https://github.com/jovyan/pythreejs/issues/101
+    if not orthographic and show_object_info:    
+        # create information box
+        click_picker = tjs.Picker(root=scene.children[0], event='mousemove')
+        infobox = widgets.HTML()
+        def change_info(change):
+            infobox.value = 'Object Coordinate: ({0:.3f}, {1:.3f}, {2:.3f})'.format(*click_picker.object.position)
+        click_picker.observe(change_info, names=['object'])
+        renderer.controls = renderer.controls + [click_picker]
+
+        return widgets.VBox([options,
+                             renderer,
+                             infobox]), gcollect
+                             
     return widgets.VBox([options,
                          renderer]), gcollect

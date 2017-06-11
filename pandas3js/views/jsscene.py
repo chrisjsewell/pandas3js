@@ -23,6 +23,11 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
         add object labels to scene
     gobject_jsmap : None or dict
         if None use default gobject->jsobject mapping
+    
+    Returns
+    -------
+    scene : pythreejs.Scene
+        scene.children = [gobjcontainer,light]
                         
     Examples
     --------
@@ -30,16 +35,17 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
     >>> from pandas3js.models import GeometricCollection, Sphere
     >>> collection = GeometricCollection()
     >>> scene = create_js_scene_view(collection,add_objects=True,add_labels=True)
-    >>> [type(child) for child in scene.children]
-    [<class 'pythreejs.pythreejs.AmbientLight'>]
+    >>> container = scene.children[0]
+    >>> [type(child) for child in container.children]
+    []
                         
     >>> collection.add_object(Sphere(id=1))
-    >>> [type(child) for child in scene.children]    
-    [<class 'traitlets.traitlets.Sprite'>, <class 'traitlets.traitlets.Mesh'>, <class 'pythreejs.pythreejs.AmbientLight'>]
+    >>> [type(child) for child in container.children]    
+    [<class 'traitlets.traitlets.Sprite'>, <class 'traitlets.traitlets.Mesh'>]
                         
     >>> sphere = collection.pop(1)
-    >>> [type(child) for child in scene.children]
-    [<class 'pythreejs.pythreejs.AmbientLight'>]
+    >>> [type(child) for child in container.children]
+    []
         
     """    
     assert isinstance(gcollect, GeometricCollection), 'gcollect must be a GeometricCollection'
@@ -53,7 +59,17 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
             gmesh = create_jsmesh_view(gobject,gobject_jsmap)
             meshes.append(gmesh)
 
-    scene = js.Scene(children=meshes+[js.AmbientLight(color='#777777')]) 
+    # create dummy parent mesh to house all meshes, so we can use single mouse picker
+    # NB: it would be better to use groups https://threejs.org/docs/#api/objects/Group
+    # but this is not implemented in pythreejs
+    gcontainer = js.Mesh(geometry=js.Geometry(), 
+                   material=js.BasicMaterial(),
+                   position=[0, 0, 0],
+                   children=meshes)
+            
+    
+    scenelight = js.AmbientLight(color='#777777')
+    scene = js.Scene(children=[gcontainer,scenelight]) 
     
     def gobjects_changed(change):
 
@@ -65,14 +81,11 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
         if removed_objects:
             removed_ids = [o.id for o in removed_objects]
             original_children = []
-            for child in scene.children:
-                if child.has_trait('gobject_id'):
-                    if child.gobject_id not in removed_ids:
-                        original_children.append(child)
-                else:
+            for child in gcontainer.children:
+                if child.gobject_id not in removed_ids:
                     original_children.append(child)
         else:
-            original_children = scene.children
+            original_children = gcontainer.children
 
         new_meshes = []
         for gobject in added_objects:
@@ -81,7 +94,7 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
             if add_objects:
                 new_meshes.append(create_jsmesh_view(gobject,gobject_jsmap))
                         
-        scene.children = new_meshes + original_children
+        gcontainer.children = new_meshes + original_children
 
     gcollect.observe(gobjects_changed, names='idobjects')
     

@@ -4,7 +4,7 @@
 import pythreejs as js
 
 def create_jsrenderer(scene, height=400,width=400, background='gray',
-                      orthographic=True, camera_position=(0,0,-10),
+                      orthographic=False, camera_position=(0,0,-10),
                       view=(10,-10, -10, 10),fov=50):
     """
     

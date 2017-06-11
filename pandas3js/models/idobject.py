@@ -15,6 +15,7 @@ class IDObject(trait.HasTraits):
     
     """
     id = trait.Int(1)
+    other_info = trait.CUnicode('',help='other information about the object as HTML')
 
 class Color(trait.TraitType):
     """ a trait type that validates a color_like value:

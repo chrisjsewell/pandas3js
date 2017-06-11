@@ -110,6 +110,7 @@ def create_gui(change_func, config_dict=None,
     label_color                                        red
     label_transparency                                   1
     label_visible                                    False
+    other_info                                            
     otype                 pandas3js.models.idobject.Sphere
     position                               (1.0, 2.0, 3.0)
     radius                                               1
@@ -127,6 +128,7 @@ def create_gui(change_func, config_dict=None,
     label_color                                        red
     label_transparency                                   1
     label_visible                                    False
+    other_info                                            
     otype                 pandas3js.models.idobject.Sphere
     position                               (0.0, 0.0, 0.0)
     radius                                               1
@@ -144,6 +146,7 @@ def create_gui(change_func, config_dict=None,
     label_color                                        red
     label_transparency                                   1
     label_visible                                    False
+    other_info                                            
     otype                 pandas3js.models.idobject.Sphere
     position                               (0.0, 0.0, 0.0)
     radius                                               1
@@ -293,9 +296,10 @@ def create_gui(change_func, config_dict=None,
     if not orthographic and show_object_info:    
         # create information box
         click_picker = tjs.Picker(root=scene.children[0], event='mousemove')
-        infobox = widgets.HTML()
+        infobox = widgets.HTMLMath()
         def change_info(change):
-            infobox.value = 'Object Coordinate: ({0:.3f}, {1:.3f}, {2:.3f})'.format(*click_picker.object.position)
+            infobox.value = 'Object Coordinate: ({1:.3f}, {2:.3f}, {3:.3f})<br>{0}'.format(
+                                click_picker.object.other_info, *click_picker.object.position)
         click_picker.observe(change_info, names=['object'])
         renderer.controls = renderer.controls + [click_picker]
 

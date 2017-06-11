@@ -65,25 +65,25 @@ class IDCollection(trait.HasTraits):
     >>> c.add_object(obj)
     >>> df = c.trait_df()
     >>> df
-       id                               otype tname
-    0   1  pandas3js.models.idobject.IDObject   NaN
-    1   3        traitlets.traitlets.IDObject  test
+       id other_info                               otype tname
+    0   1             pandas3js.models.idobject.IDObject   NaN
+    1   3                   traitlets.traitlets.IDObject  test
     
     >>> df = df.set_value(1, 'tname', 'test2')
     >>> c.change_by_df(df, columns=['tname'])
     >>> c.trait_df()
-       id                               otype  tname
-    0   1  pandas3js.models.idobject.IDObject    NaN
-    1   3        traitlets.traitlets.IDObject  test2
+       id other_info                               otype  tname
+    0   1             pandas3js.models.idobject.IDObject    NaN
+    1   3                   traitlets.traitlets.IDObject  test2
     
     >>> df = df.set_value(2, 'id', 5)
     >>> df.id = df.id.astype(int)
     >>> c.change_by_df(df, columns=['id'])
     >>> c.trait_df()
-       id                               otype  tname
-    0   1  pandas3js.models.idobject.IDObject    NaN
-    1   3        traitlets.traitlets.IDObject  test2
-    2   5  pandas3js.models.idobject.IDObject    NaN
+       id other_info                               otype  tname
+    0   1             pandas3js.models.idobject.IDObject    NaN
+    1   3                   traitlets.traitlets.IDObject  test2
+    2   5             pandas3js.models.idobject.IDObject    NaN
     
     """
     # a list of all ID objects

@@ -115,8 +115,12 @@ def create_jsmesh_view(gobject,mapping=None):
         handle = _create_trait_dlink(sdic, skey, gobject, mesh)
         gobject.observe(handle,names=sdic['vars'])
 
+    # add special traits
     mesh.add_traits(gobject_id=trait.Int())
     mesh.gobject_id = gobject.id
+    mesh.add_traits(other_info=trait.CUnicode())
+    trait.dlink((gobject, 'other_info'), (mesh, 'other_info'))        
+    
     return mesh
 
 def create_jslabelmesh_view(gobject, mapping=None):
@@ -180,14 +184,18 @@ def create_jslabelmesh_view(gobject, mapping=None):
     mesh = js.Sprite(material=material, position=gobject.position, 
                   scaleToTexture=True, 
                   scale=[1, height_attr, 1])
+
+    # add special traits
     mesh.add_traits(gobject_id=trait.Int())
     mesh.gobject_id = gobject.id
+    mesh.add_traits(other_info=trait.CUnicode())    
     
     if not class_map['show_label']:
         mesh.visible = False
         return mesh
 
     # add directional synchronisation
+    trait.dlink((gobject, 'other_info'), (mesh, 'other_info'))        
     trait.dlink((gobject, 'label'), (text_map, 'string'))
     trait.dlink((gobject, 'position'), (mesh, 'position'))
     trait.dlink((gobject, 'label_visible'), (mesh, 'visible'))

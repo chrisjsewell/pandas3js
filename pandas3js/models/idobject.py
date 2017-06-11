@@ -55,11 +55,26 @@ class Color(trait.TraitType):
         
         return value
 
-def vector3(trait_type=trait.CFloat, default=None, **kwargs):
-    if default is None:
-        default = (0, 0, 0)
-    return trait.Tuple(trait.CFloat(),trait.CFloat(),trait.CFloat(),
-                    default_value=default, **kwargs)
+class Vector3(trait.TraitType):
+    """ converts numpy arrays 
+    """
+    info_text = 'a 3d vector'
+    default_value = (0.,0.,0.)
+    def validate(self, obj, value):
+        if isinstance(value,list) or isinstance(value,tuple):
+            if len(value) != 3:
+                self.error(value, value)
+            else:
+                new_value = value
+        elif hasattr(value,'shape') and hasattr(value,'tolist'):
+            if value.shape != (3,):
+                self.error(obj, value)
+            new_value = value.tolist()
+        try:
+            new_value = tuple([float(i) for i in new_value])
+        except:
+            self.error(obj, value)
+        return new_value
                                     
 class GeometricObject(IDObject):
     """ a geometric object
@@ -73,7 +88,7 @@ class GeometricObject(IDObject):
     (0.0, 0.0, 0.0)
     
     """
-    position = vector3(default=(0,0,0),help='cartesian coordinate of pivot')
+    position = Vector3(default_value=(0,0,0),help='cartesian coordinate of pivot')
 
     visible = trait.Bool(True)
     color = Color('red')
@@ -197,7 +212,7 @@ class Plane(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    normal = vector3(default=(0,0,1),help='the normal vector of the plane')
+    normal = Vector3(default_value=(0,0,1),help='the normal vector of the plane')
     width = trait.CFloat(1,min=0.0)
 
     @trait.validate('normal')
@@ -227,7 +242,7 @@ class Line(GeometricObject):
         
     """
     
-    end = vector3(default=(1,1,1),help='cartesian coordinate of line end')
+    end = Vector3(default_value=(1,1,1),help='cartesian coordinate of line end')
     end_color = Color('red')
     linewidth = trait.CFloat(1,min=0.0)
 
@@ -251,9 +266,9 @@ class TriclinicSolid(GeometricObject):
     pivot must be at the centre or corner
         
     """
-    a = vector3(default=(1,0,0),help='box vector a')
-    b = vector3(default=(0,1,0),help='box vector b')
-    c = vector3(default=(0,0,1),help='box vector c')
+    a = Vector3(default_value=(1,0,0),help='box vector a')
+    b = Vector3(default_value=(0,1,0),help='box vector b')
+    c = Vector3(default_value=(0,0,1),help='box vector c')
     pivot = trait.CUnicode('centre',help='pivot about centre or corner')
     
     @trait.validate('pivot')

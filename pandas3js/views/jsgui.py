@@ -1,54 +1,45 @@
+import pandas as pd
 import ipywidgets as widgets
 import pythreejs as tjs
 
 import pandas3js as pjs
 
-def _create_callback(renderer, config_dict, select, ddown,
-                     change_func, gcollect, all_options,
-                     otype_column):
-    def handle_ddown(change):
+def _create_callback(renderer, option, callback, 
+                     gcollect, all_options):
+    """create a handler for an option control"""
+    def handle_option(change):
         with renderer.hold_trait_notifications():
-            all_options[ddown.description] = ddown.value
-            if config_dict is not None:
-                geometry_df = change_func(config_dict[select.value], 
-                                       all_options)
-            else:
-                geometry_df = change_func(None, all_options)
+            all_options[option.description] = option.value
+            callback(gcollect, all_options)
                 
-            gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                        otype_default='pandas3js.models.Sphere',
-                                 remove_missing=True)        
-    return handle_ddown
+    return handle_option
 
-def create_gui(change_func, config_dict=None, 
-               opts_dd=None,dd_min=3,
-               opts_slide=None, opts_color=None,
+def create_gui(geometry=None,callback=None,
+               opts_choice=None,
+               opts_range=None, opts_color=None,
+               main_controls=None,
                height=400,width=400, background='gray',
-               orthographic=False, camera_position=[0,0,-10],
+               orthographic=False, camera_position=[0,0,-1000],
                view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
                show_object_info=False,
                otype_column=None):
-    """ creates simple gui to handle geometric configuration changes,
-    with a callback to update geometry according to options 
+    """ creates simple gui to visualise 3d geometry,
+    with a callback to update geometry according to option widgets 
 
     Properties
     ----------
-    change_func : function
-        change_func(cdata,options_dict) -> pandas.DataFrame
-        of geometric objects and traits
-    config_dict : None or dict
-        {config_name:cdata,...} pairs, 
-        if not None, cdata is parsed to change_func for config_name selected
-    opts_dd : None or dict
-        {opt_name:list,...} create dropdown boxes with callbacks to change_func
-    dd_min : int
-        labels with less options will be displayed as 
-        toggle buttons (therefore all visible)
-    opts_slide : None or dict
-        {opt_name:list,...} create select slider with callbacks to change_func
+    geometry : pandas3js.models.GeometricCollection
+    callback : function
+        callback(GeometricCollection, options_dict)
+    opts_choice : None or dict
+        {opt_name:list,...} create dropdown boxes with callbacks to callback
+    opts_range : None or dict
+        {opt_name:list,...} create select slider with callbacks to callback
     opts_color : None or list
-        {opt_name:init_color,...} create select color palette with callbacks to change_func
+        {opt_name:init_color,...} create select color palette with callbacks to callback
+    main_controls : None or list
+        options that will sit in the main controls section
     height : int
         renderer height
     width : int
@@ -69,9 +60,6 @@ def create_gui(change_func, config_dict=None,
         add object labels to scene
     show_object_info : bool
         if True, show coordinate of object under mouse (currently only works for Perspective)
-    otype_column : str
-        column name for object type 
-        in dataframe from change_func
     
     Returns
     -------
@@ -85,21 +73,23 @@ def create_gui(change_func, config_dict=None,
 
     >>> import pandas3js as pjs
     >>> import pandas as pd
-    >>> config_data = {'1':{'id':[0],'position':[(0,0,0)],
-    ...                     'c1':'red','c2':'blue'},
-    ...                '2':{'id':[0],'position':[(1,2,3)],
-    ...                     'c1':'red','c2':'blue'}}
+    >>> data = {1:{'id':[0],'position':[(0,0,0)],
+    ...              'c1':'red','c2':'blue'},
+    ...         2:{'id':[0],'position':[(1,2,3)],
+    ...               'c1':'red','c2':'blue'}}
     ...
-    >>> def change_func(cdata,options):
-    ...     indf = pd.DataFrame(cdata)
+    >>> def callback(geometry,options):
+    ...     df = pd.DataFrame(data[options['config']])
     ...     ctype = options.get('color','c1')
-    ...     indf['color'] = indf[ctype]
-    ...     indf['label'] = 'myobject'
-    ...     return indf[['id','position','color','label']]
+    ...     df['color'] = df[ctype]
+    ...     df['label'] = 'myobject'
+    ...     df['otype'] = 'pandas3js.models.Sphere'
+    ...     geometry.change_by_df(df[['id','position','otype',
+    ...                               'color','label']],otype_column='otype')
     ...
-    >>> gui, collect = pjs.views.create_gui(change_func,config_data,
-    ...                     opts_dd={'color':['c1','c2']},
-    ...                     opts_slide={'dummy':[1,2,3]})
+    >>> gui, collect = pjs.views.create_gui(callback=callback,
+    ...                     opts_choice={'color':['c1','c2']},
+    ...                     opts_range={'config':[1,2]})
     ...
     >>> [pjs.utils.obj_to_str(c) for c in gui.children]
     ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer']
@@ -112,15 +102,15 @@ def create_gui(change_func, config_dict=None,
     label_visible                                    False
     other_info                                            
     otype                 pandas3js.models.idobject.Sphere
-    position                               (1.0, 2.0, 3.0)
+    position                               (0.0, 0.0, 0.0)
     radius                                               1
     transparency                                         1
     visible                                           True
     Name: 0, dtype: object
-    >>> config_select = gui.children[0].children[0].children[0]
+    >>> config_select = gui.children[0].children[1].children[1]
     >>> pjs.utils.obj_to_str(config_select)
     'ipywidgets.widgets.widget_selection.SelectionSlider'
-    >>> config_select.value = '1'
+    >>> config_select.value = 2
     >>> collect.trait_df().loc[0]
     color                                              red
     id                                                   0
@@ -130,7 +120,7 @@ def create_gui(change_func, config_dict=None,
     label_visible                                    False
     other_info                                            
     otype                 pandas3js.models.idobject.Sphere
-    position                               (0.0, 0.0, 0.0)
+    position                               (1.0, 2.0, 3.0)
     radius                                               1
     transparency                                         1
     visible                                           True
@@ -148,7 +138,7 @@ def create_gui(change_func, config_dict=None,
     label_visible                                    False
     other_info                                            
     otype                 pandas3js.models.idobject.Sphere
-    position                               (0.0, 0.0, 0.0)
+    position                               (1.0, 2.0, 3.0)
     radius                                               1
     transparency                                         1
     visible                                           True
@@ -156,59 +146,42 @@ def create_gui(change_func, config_dict=None,
     
     """
     ## initialise renderer
-    gcollect = pjs.models.GeometricCollection()
+    if geometry is None:
+        gcollect = pjs.models.GeometricCollection()
+    else:
+        gcollect = geometry
     scene = pjs.views.create_js_scene_view(gcollect,
                     add_objects=add_objects,add_labels=add_labels)
     camera, renderer = pjs.views.create_jsrenderer(scene,
                                 orthographic=orthographic, camera_position=camera_position,
                                 view=view,fov=fov,
                                 height=height,width=width, background=background)
+            
+    # creae minimal callback                    
+    if callback is None:
+        def callback(geometry, options):
+            return
          
     ## initialise geometry in renderer                    
 
     # make sure options are available for initial update
-    opts_dd = {} if opts_dd is None else opts_dd
-    all_options = {label:options[0] for label, options in opts_dd.items()}
-    opts_slide = {} if opts_slide is None else opts_slide
-    all_options.update({label:options[0] for label, options in opts_slide.items()})
+    opts_choice = {} if opts_choice is None else opts_choice
+    all_options = {label:options[0] for label, options in opts_choice.items()}
+    opts_range = {} if opts_range is None else opts_range
+    all_options.update({label:options[0] for label, options in opts_range.items()})
     opts_color = {} if opts_color is None else opts_color
     all_options.update({label:init for label, init in opts_color.items()})
     
-    if len(all_options) != len(opts_dd)+len(opts_slide)+len(opts_color):
-        raise ValueError('options in opts_dd, opts_slide, and opts_color are not unique')
-    
-    
-    if not config_dict is None:    
-        # sort number strings correctly
-        dkeys = sorted(config_dict.keys(), key=pjs.utils.natural_keys)
-        init_data = config_dict[dkeys[-1]]
-    else:
-        init_data = None
+    if len(all_options) != len(opts_choice)+len(opts_range)+len(opts_color):
+        raise ValueError('options in opts_choice, opts_slide, and opts_color are not unique')
         
-
     with renderer.hold_trait_notifications():
-        geometry_df = change_func(init_data,all_options)
-        gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                    otype_default='pandas3js.models.Sphere',
-                    remove_missing=True)      
+        callback(gcollect, all_options)
     
     ## Create controls and callbacks
-    controls = []
-
-    # a slider for selecting the configuration
-    if not config_dict is None:
-        select = widgets.SelectionSlider(description='Configuration:',
-                    value=dkeys[-1],options=dkeys, continuous_update=False)
-        def handle_slider(change):
-            with renderer.hold_trait_notifications():
-                geometry_df = change_func(config_dict[change.new],all_options)
-                gcollect.change_by_df(geometry_df,otype_column=otype_column,
-                            otype_default='pandas3js.models.Sphere',
-                            remove_missing=True)  
-        select.observe(handle_slider,names='value')
-        controls.append(select)
-    else:
-        select = None
+    main_controls = [] if main_controls is None else main_controls
+    main_options = []
+    other_options = []    
 
     # a check box for showing labels
     if add_labels:    
@@ -219,7 +192,7 @@ def create_gui(change_func, config_dict=None,
             for obj in gcollect.idobjects:
                 obj.label_visible = change.new
         toggle.observe(handle_toggle,names='value')
-        controls.append(toggle)
+        main_options.append(toggle)
     
     # zoom sliders for orthographic
     if orthographic:
@@ -243,12 +216,12 @@ def create_gui(change_func, config_dict=None,
             camera.top = zoom * top
             camera.bottom = zoom * bottom
         axiszoom.observe(handle_axiszoom,names='value')
-        controls.append(axiszoom)
+        main_options.append(axiszoom)
     
     # add additional options
-    opt_selectors = []
-
-    for label, options in opts_dd.items():
+    
+    dd_min=3 # min amount of options before switch to toggle buttons
+    for label, options in opts_choice.items():
         if len(options)==2 and True in options and False in options:
             ddown = widgets.Checkbox(value=options[0],
                 description=label)
@@ -258,39 +231,44 @@ def create_gui(change_func, config_dict=None,
         else:
             ddown = widgets.Dropdown(options=options,
                             description=label,value=options[0])
-        handle = _create_callback(renderer, config_dict, select, ddown,
-                                 change_func, gcollect,all_options,
-                                 otype_column)
+        handle = _create_callback(renderer,ddown,callback, 
+                                  gcollect,all_options)
         ddown.observe(handle, names='value')
-        opt_selectors.append(ddown)
+        if label in main_controls:
+            main_options.append(ddown)
+        else:
+            other_options.append(ddown)
     
-    for label, options in opts_slide.items():
-        slide = widgets.SelectionSlider(description=label,
-                    value=options[0],options=options, continuous_update=False)
-        handle = _create_callback(renderer, config_dict, select, slide,
-                                 change_func, gcollect,all_options,
-                                 otype_column)
-        slide.observe(handle, names='value')
-        opt_selectors.append(slide)
+    for label, options in opts_range.items():
+        slider = widgets.SelectionSlider(description=label,
+                    value=options[0],options=list(options), continuous_update=False)
+        handle = _create_callback(renderer,slider,callback, 
+                                  gcollect,all_options)
+        slider.observe(handle, names='value')
+        if label in main_controls:
+            main_options.append(slider)
+        else:
+            other_options.append(slider)
 
     for label, option in opts_color.items():
         color = widgets.ColorPicker(description=label,
                     value=option, concise=False)
-        handle = _create_callback(renderer, config_dict, select, color,
-                                 change_func, gcollect,all_options,
-                                 otype_column)
+        handle = _create_callback(renderer, color,callback, 
+                                  gcollect,all_options)
         color.observe(handle, names='value')
-        opt_selectors.append(color)
-        
+        if label in main_controls:
+            main_options.append(color)
+        else:
+            other_options.append(color)
     
-    if opt_selectors:
+    if other_options:
         options = widgets.Tab(
-            children=[widgets.VBox(controls), 
-                      widgets.VBox(opt_selectors)])
-        options.set_title(0, 'Main Controls')
-        options.set_title(1, 'Other Options')
+            children=[widgets.VBox(main_options), 
+                      widgets.VBox(other_options)])
+        options.set_title(0, 'Main')
+        options.set_title(1, 'Options')
     else:
-        options = widgets.VBox(controls)
+        options = widgets.VBox(main_options)
     
     # TDOD doesn't work for orthographic https://github.com/jovyan/pythreejs/issues/101
     if not orthographic and show_object_info:    

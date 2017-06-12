@@ -110,20 +110,22 @@ def obj_to_str(obj):
 
 def _atoi(text):
     return int(text) if text.isdigit() else text
-def natural_keys(text):
-    """human order sorting of number strings
-    
+def _natural_keys(text):
+    return [_atoi(c) for c in re.split('(\d+)',str(text))]    
+def natural_sort(iterable):
+    """human order sorting of number strings 
+
     Examples
     --------
     
     >>> sorted(['011','1', '21'])
     ['011', '1', '21']
     
-    >>> sorted(['011','1', '21'], key=natural_keys)
+    >>> natural_sort(['011','1', '21'])
     ['1', '011', '21']
     
     """
-    return [_atoi(c) for c in re.split('(\d+)',str(text))]
+    return sorted(iterable, key=_natural_keys)
     
 def tuple_to_df(df,col_name,value,index=None):
     """ a helper function for setting pandas dataframe 
@@ -137,6 +139,8 @@ def tuple_to_df(df,col_name,value,index=None):
         if None set whole column
     
     """
+    value = tuple(value)
+    
     if col_name not in df:
         df[col_name] = np.nan
     df[col_name] = df[col_name].astype(object)

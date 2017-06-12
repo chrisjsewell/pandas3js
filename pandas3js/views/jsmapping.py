@@ -41,7 +41,7 @@ gobject_jsmapping = {
      'meshfmap':{},
     
      'show_label':False,                             
-     'label_height':None,
+     'label_height':1,
     },
 
 'pandas3js.models.idobject.Line':
@@ -65,7 +65,7 @@ gobject_jsmapping = {
      'meshfmap':{},
 
      'show_label':False,                             
-     'label_height':None,
+     'label_height':1,
     },
 'pandas3js.models.idobject.TriclinicWire':
     {'grep':'pythreejs.PlainGeometry',
@@ -88,7 +88,7 @@ gobject_jsmapping = {
      'meshfmap':{},
 
      'show_label':False,                             
-     'label_height':None,
+     'label_height':1,
     },
 'pandas3js.models.idobject.TriclinicSolid':
     {'grep':'pythreejs.FaceGeometry',

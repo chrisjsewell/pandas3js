@@ -91,6 +91,10 @@ class IDCollection(trait.HasTraits):
     # used when reading df to check if valid object type
     _allowed_object = IDObject
         
+    def __iter__(self):
+        for obj in self.idobjects:
+            yield obj
+        
     def add_object(self, idobject):
         """ add ID object
         """
@@ -146,7 +150,7 @@ class IDCollection(trait.HasTraits):
     def change_by_df(self, df, columns=None, 
                      otype_default='pandas3js.models.IDObject', 
                      otype_column=None,
-                    remove_missing=False):
+                    remove_missing=True):
         """ change collection by datafame of idobject traits
                     
         Properties
@@ -233,7 +237,7 @@ class IDCollection(trait.HasTraits):
                 new_traits.append((idobject, key, value))
                     
         # hold trait notifications until all have been updated
-        with idobject.hold_trait_notifications():
+        with self.hold_trait_notifications():
             for idobject, key, value in new_traits:
                     idobject.set_trait(key, value)
 
@@ -267,6 +271,21 @@ class IDCollection(trait.HasTraits):
             data.append(trait_dict)
             
         return pd.DataFrame(data)
+    
+    def _repr_html_(self):
+        """ visualising in jupyter notebook
+        """
+        return self.trait_df().to_html()
+    def _repr_latex_(self):
+        """ visualising in jupyter notebook
+        """
+        return self.trait_df().to_latex()
+    def head(self,n=5):
+        """ show first n rows """
+        return self.trait_df().head(n)
+    def tail(self,n=5):
+        """ show first n rows """
+        return self.trait_df().tail(n)
 
 class UniqueGObjects(trait.TraitType):
 

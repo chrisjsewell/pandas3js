@@ -13,7 +13,7 @@ An extension for `traitlets <https://traitlets.readthedocs.io/en/stable/index.ht
 2. Provides simple, high level geometries, with default json specified mappings to pythreejs primitives.
 3. Creates bespoke 3D Graphics GUIs in the Jupyter Notebook with only a few lines of code.
 
-From: `pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.ipynb>`_
+From: `pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/blob/master/pandas3js_example.ipynb>`_
 
 .. image:: https://github.com/chrisjsewell/pandas3js/raw/master/pandas3js_example.gif
 

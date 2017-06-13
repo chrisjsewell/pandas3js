@@ -4,17 +4,43 @@
 """ providing trait objects with an id
 
 """
-#TODO inefficient to set x,y,z separately? 
-#      ok if hol_trait_notifications and observing all names?
+from collections import Hashable
 
 import traitlets as trait
 from matplotlib import colors
 
+class HashableType(trait.TraitType):
+    """
+    
+    Examples
+    --------
+    >>> hash = HashableType()
+    >>> hash.validate(object, 1)
+    1
+    >>> hash.validate(object, (1,1,1))
+    (1, 1, 1)
+    >>> try:
+    ...     hash.validate(object, {'a':1})
+    ...     print('validated')
+    ... except:
+    ...     print('not validated')
+    not validated
+
+    """
+    info_text = ('a value that is hashable')
+    default_value = 1    
+    def validate(self, obj, value):   
+        
+        if not isinstance(value,Hashable):
+            self.error(obj, value)
+        
+        return value
+    
 class IDObject(trait.HasTraits):
     """ an object with an id
     
     """
-    id = trait.Int(1)
+    id = HashableType()
     other_info = trait.CUnicode('',help='other information about the object as HTML')
 
 class Color(trait.TraitType):

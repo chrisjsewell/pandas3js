@@ -204,17 +204,18 @@ def create_gui(geometry=None,callback=None,
             step=0.1,
             description='zoom',
             continuous_update=True,)
-        def handle_axiszoom(change):
+        def handle_axiszoom(change):            
             if change.new>1:
                 zoom = 1./change.new
             elif change.new<-1:
                 zoom = -change.new
             else:
                 zoom = 1
-            camera.left = zoom * left
-            camera.right = zoom * right
-            camera.top = zoom * top
-            camera.bottom = zoom * bottom
+            with renderer.hold_trait_notifications():
+                camera.left = zoom * left
+                camera.right = zoom * right
+                camera.top = zoom * top
+                camera.bottom = zoom * bottom
         axiszoom.observe(handle_axiszoom,names='value')
         main_options.append(axiszoom)
     

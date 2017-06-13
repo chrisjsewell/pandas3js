@@ -14,6 +14,7 @@ import traitlets as trait
 from matplotlib import colors
 import numpy as np
 
+from pandas3js.models.idobject import HashableType
 from pandas3js.utils import str_to_obj, obj_to_str
 from pandas3js.views.jsmapping import gobject_jsmapping
 
@@ -116,7 +117,7 @@ def create_jsmesh_view(gobject,mapping=None):
         gobject.observe(handle,names=sdic['vars'])
 
     # add special traits
-    mesh.add_traits(gobject_id=trait.Int())
+    mesh.add_traits(gobject_id=HashableType())
     mesh.gobject_id = gobject.id
     mesh.add_traits(other_info=trait.CUnicode())
     trait.dlink((gobject, 'other_info'), (mesh, 'other_info'))        
@@ -186,7 +187,7 @@ def create_jslabelmesh_view(gobject, mapping=None):
                   scale=[1, height_attr, 1])
 
     # add special traits
-    mesh.add_traits(gobject_id=trait.Int())
+    mesh.add_traits(gobject_id=HashableType())
     mesh.gobject_id = gobject.id
     mesh.add_traits(other_info=trait.CUnicode())    
     

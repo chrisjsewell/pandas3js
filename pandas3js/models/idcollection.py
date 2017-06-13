@@ -180,7 +180,7 @@ class IDCollection(trait.HasTraits):
         # remove missing if required
         for obj in self.idobjects:
             existing_ids.append(obj.id)
-            if obj.id in df.id.values or not remove_missing:
+            if obj.id in df.id.values.tolist() or not remove_missing:
                 old_objects.append(obj)
         
         new_objects = []

@@ -5,6 +5,7 @@
 
 """
 from collections import Hashable
+import uuid
 
 import traitlets as trait
 from matplotlib import colors
@@ -42,6 +43,11 @@ class IDObject(trait.HasTraits):
     """
     id = HashableType()
     other_info = trait.CUnicode('',help='other information about the object as HTML')
+    
+    @trait.default('id')
+    def _default_id(self):
+        return uuid.uuid4()
+    
 
 class Color(trait.TraitType):
     """ a trait type that validates a color_like value:

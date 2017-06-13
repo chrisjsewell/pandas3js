@@ -220,8 +220,9 @@ def create_gui(geometry=None,callback=None,
     
     # add additional options
     
-    dd_min=3 # min amount of options before switch to toggle buttons
-    for label, options in opts_choice.items():
+    dd_min=4 # min amount of options before switch to toggle buttons
+    for label in sorted(opts_choice):
+        options = opts_choice[label]
         if len(options)==2 and True in options and False in options:
             ddown = widgets.Checkbox(value=options[0],
                 description=label)
@@ -239,7 +240,8 @@ def create_gui(geometry=None,callback=None,
         else:
             other_options.append(ddown)
     
-    for label, options in opts_range.items():
+    for label in sorted(opts_range):
+        options = opts_range[label]
         slider = widgets.SelectionSlider(description=label,
                     value=options[0],options=list(options), continuous_update=False)
         handle = _create_callback(renderer,slider,callback, 
@@ -250,7 +252,8 @@ def create_gui(geometry=None,callback=None,
         else:
             other_options.append(slider)
 
-    for label, option in opts_color.items():
+    for label in sorted(opts_color):
+        option = opts_color[label]
         color = widgets.ColorPicker(description=label,
                     value=option, concise=False)
         handle = _create_callback(renderer, color,callback, 

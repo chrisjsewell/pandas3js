@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 #import math
+import numpy as np
 from numpy import radians, cos, sin, arccos, array
 from matplotlib import cm
 from matplotlib.colors import Normalize
@@ -93,7 +94,7 @@ def color_by_value(values, lbound=None, ubound=None, cmap='jet'):
     colormap = cm.get_cmap(cmap)
     lbound = min(values) if lbound is None else lbound
     ubound = max(values) if ubound is None else ubound
-    norm = Normalize(lbound,ubound,clip=True)
+    norm = Normalize(float(lbound),float(ubound),clip=True)
     colors = colormap(norm(values))
     # remove alphas
     return [tuple(col[:3]) for col in colors]
@@ -179,27 +180,82 @@ def find_bonds(positions, ubound=4,
     
     return bonds
  
+def _new_id(id, current_ids):
+    if isinstance(id, tuple):
+        original = id[0]
+    else:
+        original = id
+    
+    new = (original, 1)
+    while new in current_ids:
+        new = (new[0],new[1]+1)
+    return new
+
 def repeat_cell(geometry,vector=[1,0,0],n=1):
     """ repeat geometry n times in vector direction
+    ids are returned as tuple of (original, new)
+    
+    Examples
+    --------
+    
+    >>> from pandas3js.models import GeometricObject, GeometricCollection
+    >>> g = GeometricCollection()
+    >>> g.add_object(GeometricObject(id=1,position=(0,0,0)))
+    >>> g.add_object(GeometricObject(id=2,position=(0,0,1)))
+    >>> repeat_cell(g,vector=[1,0,0],n=1)
+    >>> repeat_cell(g,vector=[0,1,0],n=1)
+    >>> for obj in g:
+    ...     print('{0}: {1}'.format(obj.id,obj.position))
+    ...
+    1: (0.0, 0.0, 0.0)
+    2: (0.0, 0.0, 1.0)
+    (1, 1): (1.0, 0.0, 0.0)
+    (2, 1): (1.0, 0.0, 1.0)
+    (1, 2): (0.0, 1.0, 0.0)
+    (2, 2): (0.0, 1.0, 1.0)
+    (1, 3): (1.0, 1.0, 0.0)
+    (2, 3): (1.0, 1.0, 1.0)
     
     """
-    vector = array(vector)
+    vector = np.array(vector)
     if n<0:
         n = abs(n)
         vector = -vector
     
     df = geometry.trait_df()
+    new_df = repeat_cell_df(df,vector,n)
+    
+    geometry.change_by_df(new_df, otype_column='otype')
+
+def repeat_cell_df(df,vector=[1,0,0],n=1):
+    """ repeat geometry n times in vector direction
+    ids are returned as tuple of (original, new)
+    
+    Examples
+    --------
+    see repeat_cell function
+        
+    """
+    vector = np.array(vector)
+    if n<0:
+        n = abs(n)
+        vector = -vector
+    
     new_df = df.copy()
 
-    max_id = df.id.max()
     for i in range(1,n+1):
         repeat_df = df.copy()
-        repeat_df.id = range(max_id+1,repeat_df.shape[0]+max_id+1)
-        max_id = repeat_df.id.max()
+        current_ids = new_df.id.values.tolist()
+        new_ids = []
+        for id in repeat_df.id.values.tolist():
+            new = _new_id(id,current_ids)
+            new_ids.append(new)
+            current_ids.append(new)
+        repeat_df.id = new_ids
         repeat_df.position = repeat_df.position + vector*i
         new_df = pd.concat([new_df,repeat_df])
     
-    geometry.change_by_df(new_df, otype_column='otype')
+    return new_df
 
     
        

@@ -8,7 +8,7 @@
 import os, sys, inspect
 import importlib
 import re
-
+from matplotlib.colors import to_rgb
 import numpy as np
 
 # python 2/3 compatibility
@@ -127,6 +127,31 @@ def natural_sort(iterable):
     """
     return sorted(iterable, key=_natural_keys)
     
+def lighter_color(color, fraction=0.1):
+    '''returns a lighter color
+    
+    Properties
+    ----------
+    color
+        (r,g,b) tuple, hex or html color name
+    fraction : float
+        fraction to lighten by
+        
+    Examples
+    --------
+    >>> lighter_color('red')
+    (1.0, 0.1, 0.1)
+        
+    '''
+    color = to_rgb(color)
+    if fraction == 0.:
+        return color
+    assert fraction>0 and fraction<=1, 'fraction must be between 0 and 1'
+    white = np.array([1., 1., 1.])
+    vector = white-color
+    r,g,b = color + vector * fraction
+    return (round(r,5),round(g,5),round(b,5))
+
 def tuple_to_df(df,col_name,value,index=None):
     """ a helper function for setting pandas dataframe 
     cell values as tuples

@@ -10,7 +10,7 @@ pandas3js: 3D Graphics UIs in the Jupyter Notebook
 An extension for `traitlets <https://traitlets.readthedocs.io/en/stable/index.html>`_ and `pythreejs <https://github.com/jovyan/pythreejs>`_ that:
 
 1. Provides a 2-way `pandas <http://pandas.pydata.org/>`_ dataframe interface for trait objects.
-2. Provides simple, high level geometries, with default json specified mappings to pythreejs primitives.
+2. Provides simple, high level (renderer agnostic) geometries, with default json specified mappings to pythreejs primitives.
 3. Creates bespoke 3D Graphics GUIs in the Jupyter Notebook with only a few lines of code.
 
 From: `pandas3js_example.ipynb <https://github.com/chrisjsewell/pandas3js/blob/master/pandas3js_example.ipynb>`_

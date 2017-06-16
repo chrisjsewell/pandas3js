@@ -7,7 +7,7 @@
 An extension for [traitlets](https://traitlets.readthedocs.io/en/stable/index.html) and [pythreejs](https://github.com/jovyan/pythreejs) that:
 
 1. Provides a 2-way [pandas](http://pandas.pydata.org/) dataframe interface for trait objects.
-2. Provides simple, high level geometries, with default json specified mappings to pythreejs primitives.
+2. Provides simple, high level (renderer agnostic) geometries, with default json specified mappings to pythreejs primitives.
 3. Creates bespoke 3D Graphics GUIs in the Jupyter Notebook with only a few lines of code.
     
 ## Examples

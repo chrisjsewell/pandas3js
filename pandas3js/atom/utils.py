@@ -231,6 +231,10 @@ def repeat_cell_df(df,vector=[1,0,0],n=1):
     """ repeat geometry n times in vector direction
     ids are returned as tuple of (original, new)
     
+    Returns
+    -------
+    new_df : pandas.DataFrame
+    
     Examples
     --------
     see repeat_cell function
@@ -257,7 +261,83 @@ def repeat_cell_df(df,vector=[1,0,0],n=1):
     
     return new_df
 
+def matgen_struct(space_grp, species, fcoords, site_properties=None,
+                     a=1, b=None,c=None,alpha=90,beta=None,gamma=None):
+    """generate pymatgen structure
     
+    Examples
+    --------
+    >>> struct = matgen_struct(229,['Fe'],[[0,0,0]],a=2.866)
+    >>> struct.cart_coords
+    array([[ 0.   ,  0.   ,  0.   ],
+           [ 1.433,  1.433,  1.433]])
+    >>> struct.atomic_numbers
+    [26, 26]
+    
+    """
+    try:
+        import pymatgen.core.surface as surf
+    except ImportError:
+        raise ImortError('pymatgen is not installed')
+                     
+    b = a if b is None else b
+    c = a if c is None else c
+    beta = alpha if beta is None else beta
+    gamma = alpha if gamma is None else gamma
+    cell = surf.Lattice.from_parameters(
+                a, b, c, alpha, beta, gamma)
+    return surf.Structure.from_spacegroup(
+                space_grp,cell,species, fcoords, site_properties)
+
+
+def _align_rot_matrix(v1, v2):
+    """get 3D rotation matrix to align v1 to v2
+    
+    v1 : np.array((3,))
+    v2 : np.array((3,))
+    
+    From http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q38
+    """ 
+    # Normalize vector length
+    i_v_norm = v1 / np.linalg.norm(v1)
+    f_v_norm = v2 / np.linalg.norm(v2)
+    # Get axis
+    uvw = np.cross(i_v_norm, f_v_norm)
+    # compute trig values - no need to go through arccos and back
+    rcos = np.dot(i_v_norm, f_v_norm)
+    rsin = np.linalg.norm(uvw)
+    #normalize and unpack axis
+    if not np.isclose(rsin, 0):
+        uvw /= rsin
+    u, v, w = uvw
+    # Compute rotation matrix - re-expressed to show structure
+    return (
+        rcos * np.eye(3) +
+        rsin * np.array([
+            [ 0,  w, -v],
+            [-w,  0,  u],
+            [ v, -u,  0]]) +
+        (1.0 - rcos) * uvw[:,None] * uvw[None,:])
+
+def realign_vectors(vectors,current_align,new_align):
+    """
+    vectors : np.array((N,3))
+    current_align : np.array((3,))
+    new_align : np.array((3,))
+    
+    Examples
+    --------
+    >>> realign_vectors(
+    ...      [[1,0,0],[0,1,0],[0,0,1]],
+    ...      [1,0,0],[0,1,0])
+    ...
+    array([[ 0.,  1.,  0.],
+           [-1.,  0.,  0.],
+           [ 0.,  0.,  1.]])
+    
+    """
+    R = _align_rot_matrix(current_align,new_align)
+    return np.einsum('...jk,...k->...j',R.T,vectors)    
        
     
     

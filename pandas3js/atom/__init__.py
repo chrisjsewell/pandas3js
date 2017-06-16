@@ -13,7 +13,8 @@ from pandas3js.atom import data
 
 from pandas3js.atom.utils import (lattice_from_params, 
                 color_by_value, color_by_category, 
-                find_bonds, repeat_cell, repeat_cell_df)
+                find_bonds, repeat_cell, repeat_cell_df,
+                matgen_struct,realign_vectors)
 
 def map_atoms(values,variable,index='Number'):
     """ map atoms to variable in atomic_data

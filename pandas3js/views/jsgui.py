@@ -224,7 +224,8 @@ def create_gui(geometry=None,callback=None,
     dd_min=4 # min amount of options before switch to toggle buttons
     for label in sorted(opts_choice):
         options = opts_choice[label]
-        if len(options)==2 and True in options and False in options:
+        if (len(options)==2 and True in options and False in options 
+            and isinstance(options[0],bool) and isinstance(options[1],bool)):
             ddown = widgets.Checkbox(value=options[0],
                 description=label)
         elif len(options)< dd_min:

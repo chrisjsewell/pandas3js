@@ -139,8 +139,9 @@ def lighter_color(color, fraction=0.1):
         
     Examples
     --------
-    >>> lighter_color('red')
-    (1.0, 0.1, 0.1)
+    >>> r,g,b = lighter_color('red')
+    >>> '{0:.1f}, {1:.1f}, {2:.1f}'.format(r,g,b)
+    '1.0, 0.1, 0.1'
         
     '''
     color = to_rgb(color)
@@ -150,7 +151,7 @@ def lighter_color(color, fraction=0.1):
     white = np.array([1., 1., 1.])
     vector = white-color
     r,g,b = color + vector * fraction
-    return (round(r,5),round(g,5),round(b,5))
+    return (r,g,b)
 
 def tuple_to_df(df,col_name,value,index=None):
     """ a helper function for setting pandas dataframe 

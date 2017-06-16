@@ -65,25 +65,25 @@ class IDCollection(trait.HasTraits):
     >>> c.add_object(obj)
     >>> df = c.trait_df()
     >>> df
-       id other_info                               otype tname
-    0   1             pandas3js.models.idobject.IDObject   NaN
-    1   3                   traitlets.traitlets.IDObject  test
+       groups  id other_info                               otype tname
+    0  (all,)   1             pandas3js.models.idobject.IDObject   NaN
+    1  (all,)   3                   traitlets.traitlets.IDObject  test
     
     >>> df = df.set_value(1, 'tname', 'test2')
     >>> c.change_by_df(df, columns=['tname'])
     >>> c.trait_df()
-       id other_info                               otype  tname
-    0   1             pandas3js.models.idobject.IDObject    NaN
-    1   3                   traitlets.traitlets.IDObject  test2
+       groups  id other_info                               otype  tname
+    0  (all,)   1             pandas3js.models.idobject.IDObject    NaN
+    1  (all,)   3                   traitlets.traitlets.IDObject  test2
     
     >>> df = df.set_value(2, 'id', 5)
     >>> df.id = df.id.astype(int)
     >>> c.change_by_df(df, columns=['id'])
     >>> c.trait_df()
-       id other_info                               otype  tname
-    0   1             pandas3js.models.idobject.IDObject    NaN
-    1   3                   traitlets.traitlets.IDObject  test2
-    2   5             pandas3js.models.idobject.IDObject    NaN
+       groups  id other_info                               otype  tname
+    0  (all,)   1             pandas3js.models.idobject.IDObject    NaN
+    1  (all,)   3                   traitlets.traitlets.IDObject  test2
+    2  (all,)   5             pandas3js.models.idobject.IDObject    NaN
     
     """
     # a list of all ID objects
@@ -134,6 +134,8 @@ class IDCollection(trait.HasTraits):
     def objects_with_trait(self, name, value=None):
         """ get all idobjects with certain trait
         
+        Properties
+        ----------
         name : str
             name of trait
         value
@@ -146,6 +148,22 @@ class IDCollection(trait.HasTraits):
                 if getattr(obj, name)==value or value is None:
                     idobjects.append(obj)
         return idobjects
+        
+    def objects_in_group(self,group):
+        """ get all idobjects with certain trait
+        
+        Properties
+        ----------
+        group : str
+            name of group
+        
+        """
+        idobjects = []
+        for obj in self.idobjects:
+            if group in obj.groups:
+                 idobjects.append(obj)
+        return idobjects
+        
             
     def change_by_df(self, df, columns=None, 
                      otype_default='pandas3js.models.IDObject', 

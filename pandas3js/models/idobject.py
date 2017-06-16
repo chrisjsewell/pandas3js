@@ -9,6 +9,7 @@ import uuid
 
 import traitlets as trait
 from matplotlib import colors
+import pandas as pd
 
 class HashableType(trait.TraitType):
     """
@@ -42,11 +43,45 @@ class IDObject(trait.HasTraits):
     
     """
     id = HashableType()
+    groups = trait.List(trait=trait.CUnicode(),default_value=("all",),
+                        help='the groups that this object belongs to') 
     other_info = trait.CUnicode('',help='other information about the object as HTML')
     
     @trait.default('id')
     def _default_id(self):
         return uuid.uuid4()
+    
+    def trait_series(self):
+        """ create pandas.Series of objects traits
+        
+        Examples
+        --------
+        >>> obj = IDObject(id=1,other_info='test')
+        >>> obj.trait_series()
+        groups        (all,)
+        id                 1
+        other_info      test
+        dtype: object
+        
+        """
+        trait_dict = {}
+        for name in self.trait_names():
+            value = getattr(self, name)
+            # might break series if cell value is a list
+            value = tuple(value) if isinstance(value, list) else value
+            trait_dict[name] = value
+        return pd.Series(trait_dict)
+
+    # def _repr_latex_(self):
+    #     """
+    #     """
+    #     return self.trait_series().to_latex()
+
+    def __repr__(self):
+        """ visualising in jupyter notebook
+        """
+        return self.trait_series().to_string()
+        
     
 
 class Color(trait.TraitType):
@@ -331,6 +366,36 @@ class TriclinicWire(TriclinicSolid):
     """
     linewidth = trait.CFloat(1)
 
+# TODO Gimbal: add labels at end of each vector
+class Gimbal(GeometricObject):
+    """ a gimbal object pointing to basis vectors
+
+    Examples
+    --------
+    
+    >>> gimbal = Gimbal()
+    >>> gimbal.position
+    (0.0, 0.0, 0.0)
+    >>> gimbal.a
+    (1.0, 0.0, 0.0)
+    >>> gimbal.a_color
+    'red'
+
+    >>> try:
+    ...     gimbal.linewidth = ''
+    ... except:
+    ...     print('not valid')
+    not valid
+        
+    """
+    a = Vector3(default_value=(1,0,0),help='vector a')
+    b = Vector3(default_value=(0,1,0),help='vector b')
+    c = Vector3(default_value=(0,0,1),help='vector c')
+    a_color = Color('red')
+    b_color = Color('green')
+    c_color = Color('orange')
+    linewidth = trait.CFloat(1,min=0.0)
+    
     
     
     

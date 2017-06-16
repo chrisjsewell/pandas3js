@@ -3,6 +3,7 @@ import ipywidgets as widgets
 import pythreejs as tjs
 
 import pandas3js as pjs
+from pandas3js.utils import natural_sort
 
 def _create_callback(renderer, option, callback, 
                      gcollect, all_options):
@@ -16,8 +17,9 @@ def _create_callback(renderer, option, callback,
 
 def create_gui(geometry=None,callback=None,
                opts_choice=None,
-               opts_range=None, opts_color=None,
-               main_controls=None,
+               opts_range=None, 
+               opts_color=None,
+               tabs=None,
                height=400,width=400, background='gray',
                orthographic=False, camera_position=[0,0,-10],
                view=(10,-10,-10,10),fov=50,
@@ -34,12 +36,14 @@ def create_gui(geometry=None,callback=None,
         callback(GeometricCollection, options_dict)
     opts_choice : None or dict
         {opt_name:list,...} create dropdown boxes with callbacks to callback
+        NB : the first item will be initially set and then the list sorted
     opts_range : None or dict
         {opt_name:list,...} create select slider with callbacks to callback
+        NB : the first item will be initially set and then the list sorted
     opts_color : None or list
         {opt_name:init_color,...} create select color palette with callbacks to callback
-    main_controls : None or list
-        options that will sit in the main controls section
+    tabs : None or dict
+        {tab_name:list of opt names,..}, by default all go in 'Options' tab
     height : int
         renderer height
     width : int
@@ -95,6 +99,7 @@ def create_gui(geometry=None,callback=None,
     ['ipywidgets.widgets.widget_selectioncontainer.Tab', 'pythreejs.pythreejs.Renderer']
     >>> collect.trait_df().loc[0]
     color                                              red
+    groups                                          (all,)
     id                                                   0
     label                                         myobject
     label_color                                        red
@@ -113,6 +118,7 @@ def create_gui(geometry=None,callback=None,
     >>> config_select.value = 2
     >>> collect.trait_df().loc[0]
     color                                              red
+    groups                                          (all,)
     id                                                   0
     label                                         myobject
     label_color                                        red
@@ -131,6 +137,7 @@ def create_gui(geometry=None,callback=None,
     >>> color_select.value = 'c2'
     >>> collect.trait_df().loc[0]
     color                                             blue
+    groups                                          (all,)
     id                                                   0
     label                                         myobject
     label_color                                        red
@@ -179,10 +186,17 @@ def create_gui(geometry=None,callback=None,
         callback(gcollect, all_options)
     
     ## Create controls and callbacks
-    main_controls = [] if main_controls is None else main_controls
-    main_options = []
-    other_options = []    
-
+    tabs = {} if tabs is None else tabs
+    # transpose tab dict
+    opt_tab_map = {}
+    for tabname,val in tabs.items():
+        for item in val:
+            if item in opt_tab_map:
+                raise ValueError('option name in tabs occurs multiple times; {}'.format(item))
+            opt_tab_map[item] = tabname
+            
+    controls = {}
+    
     # a check box for showing labels
     if add_labels:    
         toggle=widgets.Checkbox(
@@ -192,7 +206,8 @@ def create_gui(geometry=None,callback=None,
             for obj in gcollect.idobjects:
                 obj.label_visible = change.new
         toggle.observe(handle_toggle,names='value')
-        main_options.append(toggle)
+        controls.setdefault('Main',[])
+        controls['Main'].append(toggle)
     
     # zoom sliders for orthographic
     if orthographic:
@@ -217,65 +232,68 @@ def create_gui(geometry=None,callback=None,
                 camera.top = zoom * top
                 camera.bottom = zoom * bottom
         axiszoom.observe(handle_axiszoom,names='value')
-        main_options.append(axiszoom)
+        controls.setdefault('Main',[])
+        controls['Main'].append(axiszoom)
     
     # add additional options
     
     dd_min=4 # min amount of options before switch to toggle buttons
-    for label in sorted(opts_choice):
+    for label in natural_sort(opts_choice):
         options = opts_choice[label]
         if (len(options)==2 and True in options and False in options 
             and isinstance(options[0],bool) and isinstance(options[1],bool)):
             ddown = widgets.Checkbox(value=options[0],
                 description=label)
         elif len(options)< dd_min:
-            ddown = widgets.ToggleButtons(options=options,
+            ddown = widgets.ToggleButtons(options=natural_sort(options,True),
                             description=label,value=options[0])            
         else:
-            ddown = widgets.Dropdown(options=options,
+            ddown = widgets.Dropdown(options=natural_sort(options,True),
                             description=label,value=options[0])
         handle = _create_callback(renderer,ddown,callback, 
                                   gcollect,all_options)
         ddown.observe(handle, names='value')
-        if label in main_controls:
-            main_options.append(ddown)
+        
+        if label in opt_tab_map:
+            controls.setdefault(opt_tab_map[label],[])
+            controls[opt_tab_map[label]].append(ddown)
         else:
-            other_options.append(ddown)
+            controls.setdefault('Other',[])
+            controls['Other'].append(ddown)
     
-    for label in sorted(opts_range):
+    for label in natural_sort(opts_range):
         options = opts_range[label]
         slider = widgets.SelectionSlider(description=label,
-                    value=options[0],options=list(options), continuous_update=False)
+                    value=options[0],options=natural_sort(list(options),True), 
+                    continuous_update=False)
         handle = _create_callback(renderer,slider,callback, 
                                   gcollect,all_options)
         slider.observe(handle, names='value')
-        if label in main_controls:
-            main_options.append(slider)
-        else:
-            other_options.append(slider)
 
-    for label in sorted(opts_color):
+        if label in opt_tab_map:
+            controls.setdefault(opt_tab_map[label],[])
+            controls[opt_tab_map[label]].append(slider)
+        else:
+            controls.setdefault('Other',[])
+            controls['Other'].append(slider)
+
+    for label in natural_sort(opts_color):
         option = opts_color[label]
         color = widgets.ColorPicker(description=label,
                     value=option, concise=False)
         handle = _create_callback(renderer, color,callback, 
                                   gcollect,all_options)
         color.observe(handle, names='value')
-        if label in main_controls:
-            main_options.append(color)
+
+        if label in opt_tab_map:
+            controls.setdefault(opt_tab_map[label],[])
+            controls[opt_tab_map[label]].append(color)
         else:
-            other_options.append(color)
+            controls.setdefault('Other',[])
+            controls['Other'].append(color)
     
-    if other_options:
-        options = widgets.Tab(
-            children=[widgets.VBox(main_options), 
-                      widgets.VBox(other_options)])
-        options.set_title(0, 'Main')
-        options.set_title(1, 'Options')
-    else:
-        options = widgets.VBox(main_options)
-    
-    # TDOD doesn't work for orthographic https://github.com/jovyan/pythreejs/issues/101
+    # add mouse hover information box
+    # TODO doesn't work for orthographic https://github.com/jovyan/pythreejs/issues/101
     if not orthographic and show_object_info:    
         # create information box
         click_picker = tjs.Picker(root=scene.children[0], event='mousemove')
@@ -288,11 +306,29 @@ def create_gui(geometry=None,callback=None,
                 infobox.value = ''
         click_picker.observe(change_info, names=['object'])
         renderer.controls = renderer.controls + [click_picker]
+        renderer = widgets.HBox([renderer,infobox])
+        
 
-        return (widgets.VBox([options,
-                             widgets.HBox([renderer,infobox])]), 
-                gcollect)
-                             
-    return (widgets.VBox([options,
-                         renderer]), 
-           gcollect)
+    if controls:
+        sheets = []
+        sheet_names = []
+        # main at start, other at end
+        if 'Main' in controls:
+            sheet_names.append('Main')
+            sheets.append(widgets.VBox(controls.pop('Main')))        
+        for tab_name, widg in controls.items():
+            if tab_name == 'Other':
+                continue
+            sheet_names.append(tab_name)
+            sheets.append(widgets.VBox(widg))            
+        if 'Other' in controls:
+            sheet_names.append('Other')
+            sheets.append(widgets.VBox(controls.pop('Other')))
+            
+        options = widgets.Tab(children=sheets)
+        for i, name in enumerate(sheet_names):
+            options.set_title(i, name)
+        
+        return (widgets.VBox([options, renderer]),gcollect)
+    else:
+        return (renderer,gcollect)                                 

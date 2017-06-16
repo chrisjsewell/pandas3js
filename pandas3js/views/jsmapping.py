@@ -135,6 +135,30 @@ gobject_jsmapping = {
      'show_label':True,                             
      'label_height':1,
     },
+'pandas3js.models.idobject.Gimbal':
+    {'grep':'pythreejs.PlainGeometry',
+     'gvar':{},
+     'gdmap':{}, 
+     'gfmap':{'vertices':{'vars':('position','a','b','c'),
+                          'func':'pandas3js.views.jsmapping._make_gimbal_vertices'},
+              'colors':{'vars':('a_color','b_color','c_color'),
+                        'func':'pandas3js.views.jsmapping._make_gimbal_colors'}},
+     
+     'matrep':'pythreejs.LineBasicMaterial', 
+     'matvar':{'vertexColors':'VertexColors'},
+     'matdmap':{'visible':'visible','opacity':'transparency','linewidth':'linewidth'},
+     'matfmap':{'transparent':{'vars':('transparency',),
+                               'func':'pandas3js.views.jsmapping._transparent'}},
+
+     'meshrep':'pythreejs.Line',
+     'meshvar':{'type':'LinePieces'},
+     'meshdmap':{},
+     'meshfmap':{},
+
+     'show_label':False,                             
+     'label_height':1,
+    },
+
 }    
 
 # functions for mapping
@@ -188,6 +212,16 @@ def _make_sbox_vertices(position,a,b,c,pivot):
     vertices = np.array([o,o+c,o+b,o+b+c,o+a,
                 o+a+c,o+a+b,o+a+b+c])
     return vertices.flatten().tolist()
+
+def _make_gimbal_vertices(position,a,b,c):
+    """ make box vertices """
+    return [position,a,position,b,position,c]
+    
+def _make_gimbal_colors(a_color,b_color,c_color):
+    acol = colors.to_hex(a_color)
+    bcol = colors.to_hex(b_color)
+    ccol = colors.to_hex(c_color)
+    return [acol,acol,bcol,bcol,ccol,ccol]
 
 def _make_plane_vertices(position,normal,width):
     """make plane vertices"""    

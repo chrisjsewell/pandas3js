@@ -338,6 +338,48 @@ def realign_vectors(vectors,current_align,new_align):
     """
     R = _align_rot_matrix(current_align,new_align)
     return np.einsum('...jk,...k->...j',R.T,vectors)    
-       
+
+def slice_mask(points, vector, 
+               ubound=None, lbound=None,
+              origin=(0,0,0)):
+    """compute mask for points within the lower and upper planes
     
+    Properties
+    ----------
+    points : array((N,3))
+    vector : array((3,))
+        the vector normal to the slice planes
+    ubound : None or float
+        the fractional length (+/-) along the vector to create the upper slice plane
+    lbound : None or float
+        the fractional length (+/-) along the vector to create the lower slice plane
+    origin : array((3,))
+        the origin of the vector
+        
+    Examples
+    --------
+    >>> points = [[0,0,-5],[0,0,0],[0,0,5]]
+    >>> slice_mask(points,[0,0,1],ubound=1)
+    array([ True,  True, False], dtype=bool)
+    
+    >>> slice_mask(points,[0,0,1],lbound=1)
+    array([False, False,  True], dtype=bool)
+    
+    >>> slice_mask(points,[0,0,1],lbound=-1,ubound=1)
+    array([False,  True, False], dtype=bool)
+    
+    >>> slice_mask(points,[0,0,1],lbound=1,origin=[0,0,2])
+    array([False, False,  True], dtype=bool)
+    
+    """
+    mask = np.array([True for _ in points])
+
+    if ubound is not None:
+        cpoints = np.array(points) - np.array(origin) - np.array(vector) * ubound
+        mask = mask & (np.einsum('j,ij->i',vector,cpoints) <=0)
+    if lbound is not None:
+        cpoints = np.array(points) - np.array(origin) - np.array(vector) * lbound
+        mask = mask & (np.einsum('j,ij->i',vector,cpoints) >=0)
+
+    return mask        
     

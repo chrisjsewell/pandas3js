@@ -342,4 +342,6 @@ def create_gui(geometry=None,callback=None,
     for i, name in enumerate(tabs):
         options.set_title(i, name)
     
-    return (widgets.VBox([options, renderer]),gcollect,all_options.viewitems())
+    return (widgets.VBox([options, renderer]),gcollect,
+                all_options.viewitems() if hasattr(all_options,'viewitems')
+                else all_options.items()) # python 2/3 compatability

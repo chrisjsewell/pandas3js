@@ -338,7 +338,7 @@ def create_gui(geometry=None,callback=None,
         tabs['Other'] = widgets.VBox([tabs['Other'],
                                       widgets.VBox(vbox_list)])
     
-    options = widgets.Tab(children=tabs.values())
+    options = widgets.Tab(children=tuple(tabs.values()))
     for i, name in enumerate(tabs):
         options.set_title(i, name)
     

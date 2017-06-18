@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pandas as pd
 import ipywidgets as widgets
 import pythreejs as tjs
@@ -16,10 +18,8 @@ def _create_callback(renderer, option, callback,
     return handle_option
 
 def create_gui(geometry=None,callback=None,
-               opts_choice=None,
-               opts_range=None, 
-               opts_color=None,
-               tabs=None,
+               opts_choice=None,opts_range=None,opts_color=None,
+               initial_values=None,layout=None,
                height=400,width=400, background='gray',
                orthographic=False, camera_position=[0,0,-10],
                view=(10,-10,-10,10),fov=50,
@@ -35,15 +35,17 @@ def create_gui(geometry=None,callback=None,
     callback : function
         callback(GeometricCollection, options_dict)
     opts_choice : None or dict
-        {opt_name:list,...} create dropdown boxes with callbacks to callback
-        NB : the first item will be initially set and then the list sorted
+        {opt_name:(initial, list)} create dropdown boxes with callbacks to callback
     opts_range : None or dict
-        {opt_name:list,...} create select slider with callbacks to callback
-        NB : the first item will be initially set and then the list sorted
+        {opt_name:(initial, list)} create select slider with callbacks to callback
     opts_color : None or list
         {opt_name:init_color,...} create select color palette with callbacks to callback
-    tabs : None or dict
-        {tab_name:list of opt names,..}, by default all go in 'Options' tab
+    inital_values : None or dict
+        initial values for options (default is first value of list)
+    layout : None or list
+        (tab_name,[option_name, ...]) pairs, 
+        if nested list, then these will be vertically aligned
+        by default all go in 'Other' tab
     height : int
         renderer height
     width : int
@@ -71,6 +73,8 @@ def create_gui(geometry=None,callback=None,
         containing rendered scene and option widgets
     gcollect : pandas3js.GeometricCollection
         the collection of current geometric objects
+    options_view : dict_items
+        a view of the current options values
         
     Examples
     --------
@@ -91,7 +95,7 @@ def create_gui(geometry=None,callback=None,
     ...     geometry.change_by_df(df[['id','position','otype',
     ...                               'color','label']],otype_column='otype')
     ...
-    >>> gui, collect = pjs.views.create_gui(callback=callback,
+    >>> gui, collect, opts = pjs.views.create_gui(callback=callback,
     ...                     opts_choice={'color':['c1','c2']},
     ...                     opts_range={'config':[1,2]})
     ...
@@ -112,7 +116,7 @@ def create_gui(geometry=None,callback=None,
     transparency                                         1
     visible                                           True
     Name: 0, dtype: object
-    >>> config_select = gui.children[0].children[1].children[1]
+    >>> config_select = gui.children[0].children[1].children[1].children[1]
     >>> pjs.utils.obj_to_str(config_select)
     'ipywidgets.widgets.widget_selection.SelectionSlider'
     >>> config_select.value = 2
@@ -131,7 +135,7 @@ def create_gui(geometry=None,callback=None,
     transparency                                         1
     visible                                           True
     Name: 0, dtype: object
-    >>> color_select = gui.children[0].children[1].children[0]
+    >>> color_select = gui.children[0].children[1].children[1].children[0]
     >>> pjs.utils.obj_to_str(color_select)
     'ipywidgets.widgets.widget_selection.ToggleButtons'
     >>> color_select.value = 'c2'
@@ -152,6 +156,28 @@ def create_gui(geometry=None,callback=None,
     Name: 0, dtype: object
     
     """
+    ## intialise options
+    init_vals = {} if initial_values is None else initial_values
+    
+    opts_choice = {} if opts_choice is None else opts_choice
+    all_options = {label:init_vals[label] if label in init_vals else options[0] 
+                                          for label, options in opts_choice.items()}
+    opts_range = {} if opts_range is None else opts_range
+    all_options.update({label:init_vals[label] if label in init_vals else options[0] 
+                                          for label, options in opts_range.items()})
+    opts_color = {} if opts_color is None else opts_color
+    all_options.update({label:init_vals[label] if label in init_vals else init 
+                                          for label, init in opts_color.items()})
+    
+    if len(all_options) != len(opts_choice)+len(opts_range)+len(opts_color):
+        raise ValueError('options in opts_choice, opts_slide, and opts_color are not unique')
+    
+    ## intialise layout
+    layout = [] if layout is None else layout
+    layout_dict = OrderedDict(layout)
+    if len(layout_dict) != len(layout):
+        raise ValueError('layout tab names are not unique')
+
     ## initialise renderer
     if geometry is None:
         gcollect = pjs.models.GeometricCollection()
@@ -164,37 +190,16 @@ def create_gui(geometry=None,callback=None,
                                 view=view,fov=fov,
                                 height=height,width=width, background=background)
             
-    # creae minimal callback                    
+    ## create minimal callback                    
     if callback is None:
         def callback(geometry, options):
             return
          
-    ## initialise geometry in renderer                    
-
-    # make sure options are available for initial update
-    opts_choice = {} if opts_choice is None else opts_choice
-    all_options = {label:options[0] for label, options in opts_choice.items()}
-    opts_range = {} if opts_range is None else opts_range
-    all_options.update({label:options[0] for label, options in opts_range.items()})
-    opts_color = {} if opts_color is None else opts_color
-    all_options.update({label:init for label, init in opts_color.items()})
-    
-    if len(all_options) != len(opts_choice)+len(opts_range)+len(opts_color):
-        raise ValueError('options in opts_choice, opts_slide, and opts_color are not unique')
-        
+    ## initialise geometry in renderer                            
     with renderer.hold_trait_notifications():
         callback(gcollect, all_options)
     
     ## Create controls and callbacks
-    tabs = {} if tabs is None else tabs
-    # transpose tab dict
-    opt_tab_map = {}
-    for tabname,val in tabs.items():
-        for item in val:
-            if item in opt_tab_map:
-                raise ValueError('option name in tabs occurs multiple times; {}'.format(item))
-            opt_tab_map[item] = tabname
-            
     controls = {}
     
     # a check box for showing labels
@@ -206,8 +211,7 @@ def create_gui(geometry=None,callback=None,
             for obj in gcollect.idobjects:
                 obj.label_visible = change.new
         toggle.observe(handle_toggle,names='value')
-        controls.setdefault('Main',[])
-        controls['Main'].append(toggle)
+        controls['View Label'] = toggle
     
     # zoom sliders for orthographic
     if orthographic:
@@ -232,65 +236,56 @@ def create_gui(geometry=None,callback=None,
                 camera.top = zoom * top
                 camera.bottom = zoom * bottom
         axiszoom.observe(handle_axiszoom,names='value')
-        controls.setdefault('Main',[])
-        controls['Main'].append(axiszoom)
+        
+        controls['Orthographic Zoom'] = axiszoom
     
     # add additional options
     
     dd_min=4 # min amount of options before switch to toggle buttons
-    for label in natural_sort(opts_choice):
+    for label in opts_choice:
         options = opts_choice[label]
+        initial = init_vals[label] if label in init_vals else options[0]
+        assert initial in list(options), "initial value {0} for {1} not in range: {2}".format(
+                                                                   initial, label, list(options))
         if (len(options)==2 and True in options and False in options 
             and isinstance(options[0],bool) and isinstance(options[1],bool)):
-            ddown = widgets.Checkbox(value=options[0],
+            ddown = widgets.Checkbox(value=initial,
                 description=label)
         elif len(options)< dd_min:
-            ddown = widgets.ToggleButtons(options=natural_sort(options,True),
-                            description=label,value=options[0])            
+            ddown = widgets.ToggleButtons(options=list(options),
+                            description=label,value=initial)            
         else:
-            ddown = widgets.Dropdown(options=natural_sort(options,True),
-                            description=label,value=options[0])
+            ddown = widgets.Dropdown(options=list(options),
+                            description=label,value=initial)
         handle = _create_callback(renderer,ddown,callback, 
                                   gcollect,all_options)
         ddown.observe(handle, names='value')
         
-        if label in opt_tab_map:
-            controls.setdefault(opt_tab_map[label],[])
-            controls[opt_tab_map[label]].append(ddown)
-        else:
-            controls.setdefault('Other',[])
-            controls['Other'].append(ddown)
+        controls[label] = ddown
     
-    for label in natural_sort(opts_range):
+    for label in opts_range:
         options = opts_range[label]
+        initial = init_vals[label] if label in init_vals else options[0]
+        assert initial in list(options), "initial value {0} for {1} not in range: {2}".format(
+                                                                   initial, label, list(options))
         slider = widgets.SelectionSlider(description=label,
-                    value=options[0],options=natural_sort(list(options),True), 
+                    value=initial,options=list(options), 
                     continuous_update=False)
         handle = _create_callback(renderer,slider,callback, 
                                   gcollect,all_options)
         slider.observe(handle, names='value')
 
-        if label in opt_tab_map:
-            controls.setdefault(opt_tab_map[label],[])
-            controls[opt_tab_map[label]].append(slider)
-        else:
-            controls.setdefault('Other',[])
-            controls['Other'].append(slider)
+        controls[label] = slider
 
-    for label in natural_sort(opts_color):
-        option = opts_color[label]
+    for label in opts_color:
+        option = init_vals[label] if label in init_vals else opts_color[label]
         color = widgets.ColorPicker(description=label,
                     value=option, concise=False)
         handle = _create_callback(renderer, color,callback, 
                                   gcollect,all_options)
         color.observe(handle, names='value')
-
-        if label in opt_tab_map:
-            controls.setdefault(opt_tab_map[label],[])
-            controls[opt_tab_map[label]].append(color)
-        else:
-            controls.setdefault('Other',[])
-            controls['Other'].append(color)
+        
+        controls[label] = slider
     
     # add mouse hover information box
     # TODO doesn't work for orthographic https://github.com/jovyan/pythreejs/issues/101
@@ -308,27 +303,43 @@ def create_gui(geometry=None,callback=None,
         renderer.controls = renderer.controls + [click_picker]
         renderer = widgets.HBox([renderer,infobox])
         
+    if not controls:
+        return (renderer,gcollect,all_options.viewitems())                                 
 
-    if controls:
-        sheets = []
-        sheet_names = []
-        # main at start, other at end
-        if 'Main' in controls:
-            sheet_names.append('Main')
-            sheets.append(widgets.VBox(controls.pop('Main')))        
-        for tab_name, widg in controls.items():
-            if tab_name == 'Other':
-                continue
-            sheet_names.append(tab_name)
-            sheets.append(widgets.VBox(widg))            
-        if 'Other' in controls:
-            sheet_names.append('Other')
-            sheets.append(widgets.VBox(controls.pop('Other')))
-            
-        options = widgets.Tab(children=sheets)
-        for i, name in enumerate(sheet_names):
-            options.set_title(i, name)
+    ## layout tabs and controls     
+    tabs = OrderedDict()  
+    for tab_name, clist in layout_dict.items():
+        vbox_list = []
         
-        return (widgets.VBox([options, renderer]),gcollect)
-    else:
-        return (renderer,gcollect)                                 
+        for cname in clist:
+            if isinstance(cname,list):
+                hbox_list = [controls.pop(subcname) for subcname in cname]
+                vbox_list.append(widgets.HBox(hbox_list))
+            else:
+                vbox_list.append(controls.pop(cname))
+        tabs[tab_name] = widgets.VBox(vbox_list)
+    
+    if 'Orthographic Zoom' in controls:
+        tabs.setdefault('View', widgets.Box() )
+        tabs['View'] = widgets.VBox([tabs['View'],
+                                     controls.pop('Orthographic Zoom')])
+        
+    if 'View Label' in controls:
+        tabs.setdefault('View', widgets.Box() )
+        tabs['View'] = widgets.VBox([tabs['View'],
+                                     controls.pop('View Label')])
+    
+    # deal with remaining controls
+    if controls:
+        vbox_list = []
+        for cname in natural_sort(controls):
+            vbox_list.append(controls.pop(cname))
+        tabs.setdefault('Other', widgets.Box() )
+        tabs['Other'] = widgets.VBox([tabs['Other'],
+                                      widgets.VBox(vbox_list)])
+    
+    options = widgets.Tab(children=tabs.values())
+    for i, name in enumerate(tabs):
+        options.set_title(i, name)
+    
+    return (widgets.VBox([options, renderer]),gcollect,all_options.viewitems())

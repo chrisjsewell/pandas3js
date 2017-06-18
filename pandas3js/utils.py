@@ -111,20 +111,10 @@ def obj_to_str(obj):
 def _atoi(text):
     return int(text) if text.isdigit() else text
 def _natural_keys(text):
-    return [_atoi(c) for c in re.split('(\d+)',str(text))]    
-def _atoi_neg(text):
-    if len(text) > 1: 
-        if text[0] == '-':
-            return int(text) if text[1:].isdigit() else text
-    return int(text) if text.isdigit() else text
-def _natural_keys_neg(text):
-    return [_atoi_neg(c) for c in re.split('(-?\d+)',str(text))]    
-def natural_sort(iterable,negative=False):
+    return [text] if isinstance(text,float) else [_atoi(c) for c in re.split('(\d+)',str(text))]    
+def natural_sort(iterable):
     """human order sorting of number strings 
 
-    negative : bool
-        if True, treat negative numbers
-    
     Examples
     --------
     
@@ -133,16 +123,8 @@ def natural_sort(iterable,negative=False):
     
     >>> natural_sort(['011','1', '21'])
     ['1', '011', '21']
-    
-    >>> natural_sort([1,-1,'a-2','a-3'],False)
-    [1, -1, 'a-2', 'a-3']
-
-    >>> natural_sort([1,-1,'a-2','a-3'],True)
-    [-1, 1, 'a-3', 'a-2']
-    
+        
     """
-    if negative:
-        return sorted(iterable, key=_natural_keys_neg)
     return sorted(iterable, key=_natural_keys)
     
 def lighter_color(color, fraction=0.1):

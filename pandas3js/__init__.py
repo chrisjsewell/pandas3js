@@ -5,7 +5,7 @@
 
 """
 
-__version__ = '0.1.5.1'
+__version__ = '0.1.5.2'
 
 from pandas3js import models
 from pandas3js import views

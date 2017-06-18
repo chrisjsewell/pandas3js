@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#import math
+import math
 import numpy as np
 from numpy import radians, cos, sin, arccos, array
 from matplotlib import cm
@@ -382,4 +382,255 @@ def slice_mask(points, vector,
         mask = mask & (np.einsum('j,ij->i',vector,cpoints) >=0)
 
     return mask        
+
+def vector_norm(data, axis=None, out=None):
+    """Return length, i.e. eucledian norm, of ndarray along axis.
+
+    >>> v = np.random.random(3)
+    >>> n = vector_norm(v)
+    >>> np.allclose(n, np.linalg.norm(v))
+    True
+    >>> v = np.random.rand(6, 5, 3)
+    >>> n = vector_norm(v, axis=-1)
+    >>> np.allclose(n, np.sqrt(np.sum(v*v, axis=2)))
+    True
+    >>> n = vector_norm(v, axis=1)
+    >>> np.allclose(n, np.sqrt(np.sum(v*v, axis=1)))
+    True
+    >>> v = np.random.rand(5, 4, 3)
+    >>> n = np.empty((5, 3))
+    >>> vector_norm(v, axis=1, out=n)
+    >>> np.allclose(n, np.sqrt(np.sum(v*v, axis=1)))
+    True
+    >>> vector_norm([])
+    0.0
+    >>> vector_norm([1])
+    1.0
+
+    """
+    data = np.array(data, dtype=np.float64, copy=True)
+    if out is None:
+        if data.ndim == 1:
+            return math.sqrt(np.dot(data, data))
+        data *= data
+        out = np.atleast_1d(np.sum(data, axis=axis))
+        np.sqrt(out, out)
+        return out
+    else:
+        data *= data
+        np.sum(data, axis=axis, out=out)
+        np.sqrt(out, out)
+
+def angle_between_vectors(v0, v1, directed=True, axis=0):
+    """Return angle between vectors.
+
+    If directed is False, the input vectors are interpreted as undirected axes,
+    i.e. the maximum angle is pi/2.
+
+    >>> a = angle_between_vectors([1, -2, 3], [-1, 2, -3])
+    >>> np.allclose(a, math.pi)
+    True
+    >>> a = angle_between_vectors([1, -2, 3], [-1, 2, -3], directed=False)
+    >>> np.allclose(a, 0)
+    True
+    >>> v0 = [[2, 0, 0, 2], [0, 2, 0, 2], [0, 0, 2, 2]]
+    >>> v1 = [[3], [0], [0]]
+    >>> a = angle_between_vectors(v0, v1)
+    >>> np.allclose(a, [0, 1.5708, 1.5708, 0.95532])
+    True
+    >>> v0 = [[2, 0, 0], [2, 0, 0], [0, 2, 0], [2, 0, 0]]
+    >>> v1 = [[0, 3, 0], [0, 0, 3], [0, 0, 3], [3, 3, 3]]
+    >>> a = angle_between_vectors(v0, v1, axis=1)
+    >>> np.allclose(a, [1.5708, 1.5708, 1.5708, 0.95532])
+    True
+
+    """
+    v0 = np.array(v0, dtype=np.float64, copy=False)
+    v1 = np.array(v1, dtype=np.float64, copy=False)
+    dot = np.sum(v0 * v1, axis=axis)
+    dot /= vector_norm(v0, axis=axis) * vector_norm(v1, axis=axis)
+    return np.arccos(dot if directed else np.fabs(dot))
+
+def cartesian_to_fractional(coords, a, b, c,origin=(0,0,0)):
+    r""" transform from cartesian to crystal fractional coordinates
+    
+    Properties
+    ------------        
+    coords : numpy.array((N,3))
+    a : numpy.array(3)
+    b : numpy.array(3)
+    c : numpy.array(3)
+    origin : numpy.array(3)
+    
+    Examples
+    --------
+    >>> cartesian_to_fractional([[1,1,6]],[1,0,0],[0,2,0],[0,0,3])
+    array([[ 1. ,  0.5,  2. ]])
+
+    Notes
+    -----
+    From https://en.wikipedia.org/wiki/Fractional_coordinates
+    
+    .. math::
+    
+        \begin{bmatrix}x_{frac}\\y_{frac}\\z_{frac}\\\end{bmatrix}=
+        \begin{bmatrix}{
+        \frac {1}{a}}&-{\frac {\cos(\gamma )}{a\sin(\gamma )}}&{\frac {\cos(\alpha )\cos(\gamma )-\cos(\beta )}{av\sin(\gamma )}}\\
+        0&{\frac {1}{b\sin(\gamma )}}&{\frac {\cos(\beta )\cos(\gamma )-\cos(\alpha )}{bv\sin(\gamma )}}\\
+        0&0&{\frac {\sin(\gamma )}{cv}}\\\end{bmatrix}
+        \begin{bmatrix}x\\y\\z\\\end{bmatrix}
+        
+    such that v is the volume of a unit parallelepiped defined as:
+    
+    .. math::
+
+        v={\sqrt {1-\cos ^{2}(\alpha )-\cos ^{2}(\beta )-\cos ^{2}(\gamma )+2\cos(\alpha )\cos(\beta )\cos(\gamma )}}
+        
+    """
+    # move to origin
+    coords = np.asarray(coords) - np.asarray(origin)
+    
+    # create transform matrix
+    a_norm = np.linalg.norm(a)
+    b_norm = np.linalg.norm(b)
+    c_norm = np.linalg.norm(c)
+
+    alpha = angle_between_vectors(b,c)
+    beta = angle_between_vectors(a,c)
+    gamma = angle_between_vectors(a,b)
+    
+    if alpha==0 or beta==0 or gamma==0:
+        raise ValueError('a,b,c do not form a basis')
+    
+    sin, cos = math.sin, math.cos
+    cos_a = cos(alpha)
+    cos_b = cos(beta)
+    cos_g = cos(gamma)
+    sin_g = sin(gamma)
+    
+    v = math.sqrt(1-cos_a**2-cos_b**2-cos_g**2+2*cos_a*cos_b*cos_g)
+    
+    conv_matrix = np.array([
+        [1/a_norm, -(cos_g/(a_norm*sin_g)),(cos_a*cos_g-cos_b)/(a_norm*v*sin_g)],
+        [0,        1/(b_norm*sin_g),       (cos_b*cos_g-cos_a)/(b_norm*v*sin_g)],
+        [0,        0,                      sin_g/(c_norm*v)]])
+    
+    # transform        
+    new_coords = np.dot(conv_matrix,coords.T).T
+    
+    return new_coords
+
+def fractional_to_cartesian(coords, a, b, c,origin=(0,0,0)):
+    r""" transform from crystal fractional coordinates to cartesian
+    
+    Properties
+    ------------        
+    coords : numpy.array((N,3))    
+    a : numpy.array(3)    
+    b : numpy.array(3)    
+    c : numpy.array(3)    
+    origin : numpy.array(3)
+    
+    Examples
+    --------
+    >>> fractional_to_cartesian([[1,1,1]],[1,0,0],[0,2,0],[0,0,3])
+    array([[ 1.,  2.,  3.]])
+    
+    Notes
+    -----
+    From https://en.wikipedia.org/wiki/Fractional_coordinates
+    
+    .. math::
+    
+        \begin{bmatrix}x\\y\\z\\\end{bmatrix}=
+        \begin{bmatrix}a&b\cos(\gamma )&c\cos(\beta )\\0&b\sin(\gamma )&c{\frac {\cos(\alpha )-\cos(\beta )\cos(\gamma )}{\sin(\gamma )}}\\0&0&c{\frac {v}{\sin(\gamma )}}\\\end{bmatrix}
+        \begin{bmatrix}x_{frac}\\y_{frac}\\z_{frac}\\\end{bmatrix}
+        
+    such that v is the volume of a unit parallelepiped defined as:
+    
+    .. math::
+
+        v={\sqrt {1-\cos ^{2}(\alpha )-\cos ^{2}(\beta )-\cos ^{2}(\gamma )+2\cos(\alpha )\cos(\beta )\cos(\gamma )}}
+        
+    """
+    coords = np.asarray(coords)
+    
+    # create transform matrix
+    a_norm = np.linalg.norm(a)
+    b_norm = np.linalg.norm(b)
+    c_norm = np.linalg.norm(c)
+
+    alpha = angle_between_vectors(b,c)
+    beta = angle_between_vectors(a,c)
+    gamma = angle_between_vectors(a,b)
+    
+    if alpha==0 or beta==0 or gamma==0:
+        raise ValueError('a,b,c do not form a basis')
+    
+    sin, cos = math.sin, math.cos
+    cos_a = cos(alpha)
+    cos_b = cos(beta)
+    cos_g = cos(gamma)
+    sin_g = sin(gamma)
+    
+    v = math.sqrt(1-cos_a**2-cos_b**2-cos_g**2+2*cos_a*cos_b*cos_g)
+    
+    conv_matrix = np.array([
+        [a_norm,  b_norm*cos_g,       c_norm*cos_b                    ],
+        [0,       b_norm*sin_g,       c_norm*(cos_a-cos_b*cos_a)/sin_g],
+        [0,       0,                  c_norm*v/sin_g                  ]])
+    
+    # transform        
+    new_coords = np.dot(conv_matrix,coords.T).T
+
+    # move relative to origin
+    coords = np.asarray(coords) + np.asarray(origin)
+    
+    return new_coords
+
+def rotate_vectors(coords, axis, theta, origin=(0,0,0)):
+    """rotate the coordinates clockwise about the given axis direction 
+    by theta degrees.
+    
+    Properties
+    ----------
+    coords : iterable or list of iterables
+        coordinates to rotate [x,y,z] or [[x1,y1,z1],[x2,y2,z2],...]
+    axis : iterable
+        axis to rotate around [x0,y0,z0] 
+    theta : float
+        rotation angle in degrees
+    
+    Examples
+    --------
+    >>> rotate_vectors([0,1,0],[0,0,1],90).round()
+    array([[ 1.,  0.,  0.]])
+    
+    >>> rotate_vectors([[0,1,0],[1,0,0]],[0,0,1],90).round()
+    array([[ 1.,  0.,  0.],
+           [ 0., -1.,  0.]])
+    
+    >>> rotate_vectors([1,1,0],[0,0,1],90,[1,0,0]).round()
+    array([[ 2.,  0.,  0.]])
+    
+    """
+    # move to (0,0,0)
+    coords = np.asarray(coords) - np.asarray(origin)    
+    
+    theta = -1*theta
+    
+    axis = np.asarray(axis)
+    theta = np.asarray(theta)*np.pi/180.
+    axis = axis/math.sqrt(np.dot(axis, axis))
+    a = math.cos(theta/2.0)
+    b, c, d = -axis*math.sin(theta/2.0)
+    aa, bb, cc, dd = a*a, b*b, c*c, d*d
+    bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
+    rotation_matrix = np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
+                     [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
+                     [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]]) 
+    
+    rot_coords = np.array(np.einsum('ij,...j->...i',rotation_matrix,coords),ndmin=2) 
+    
+    return rot_coords + np.asarray(origin)        
     

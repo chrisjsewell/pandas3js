@@ -369,6 +369,8 @@ class TriclinicWire(TriclinicSolid):
 # TODO Gimbal: add labels at end of each vector
 class Gimbal(GeometricObject):
     """ a gimbal object pointing to basis vectors
+    
+    default: a red, b green, c orange, 
 
     Examples
     --------

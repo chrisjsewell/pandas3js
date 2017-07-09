@@ -35,7 +35,7 @@ deploy:
     # test pypi
   - provider: pypi
     distributions: bdist_wheel 
-    server: https://testpypi.python.org/pypi
+    server: https://test.pypi.org/legacy/
     user: cjsewell
     password:
       secure: ssuQpbMExfbnkN9EB3z9Y8YxJtC3k37OpLMtvetl31/PZ8cOkjO4E5YewhHXnn2KNwIrjEXGocA29D89Jy39GU1HUqgIuoxpIrOPV6cPoOwJb8hGSkp3kJ84ep0Xf/QSUzYEyMGjWZwdTWtgklHHZjrL7LCCO2N6qL1P1RHpZu2Jd9SIjnsEZP6QQ8oBhZVnxZvdrG3oFHQ8NBwGUJ1m+eYdU58/+xhYLx71ADQy4Ifaq/01z39An3tkWIVG4nV6lwIhCAAWk5F0kAOd1JT5rjYzEosuNHvClCAfTW0uKTQMK85H4AICV6n6xY4HprSiVXSr02i1ES9YT65w5xBhCJHxRpHw+kFL6bVQMGigXhU0tzpI1ORWlnHi0W+v42sWJyOrOua37EU2IR02d4agsIiaOIm27YY40xuJNMf01Ggd6K7BLdKuP4PiY67hdEmJKnQKgjL0RqIR3yLZ1Ms1i5f/qIqphFXM3IoDRSIjT7WVo91xm+x8nHHDGX7Jv+DwVx8bh22mw/JwgjT5TImD4q84tw93mvkUd3v6Xe/lPuoji2UtJLo3tHs/rMj2vv3tRREwAmZWwvMUX5beIMpNVvlunmzIcUGZiKhkvpmaWEr3vIZ9vZxA9D3stDm4bFBOlaQGJ0hXnj/8z7iz6N1k/I1vB+VAVWRq2DWo8WrSK8I=

@@ -167,7 +167,7 @@ class IDCollection(trait.HasTraits):
             
     def change_by_df(self, df, columns=None, 
                      otype_default='pandas3js.models.IDObject', 
-                     otype_column='otype',
+                     otype_column=None,
                     remove_missing=True):
         """ change collection by datafame of idobject traits
                     

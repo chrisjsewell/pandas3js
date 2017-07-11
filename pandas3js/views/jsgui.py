@@ -304,7 +304,9 @@ def create_gui(geometry=None,callback=None,
         renderer = widgets.HBox([renderer,infobox])
         
     if not controls:
-        return (renderer,gcollect,all_options.viewitems())                                 
+        return (renderer,gcollect,
+        all_options.viewitems() if hasattr(all_options,'viewitems')
+        else all_options.items()) # python 2/3 compatability                              
 
     ## layout tabs and controls     
     tabs = OrderedDict()  

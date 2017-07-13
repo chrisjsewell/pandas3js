@@ -10,7 +10,7 @@ from pandas3js.models.idcollection import GeometricCollection
 
 
 def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
-                        gobject_jsmap=None, jslink=False):
+                        gobject_jsmap=None, jslink=True):
     """create PyThreeJS Scene for GeometricCollection
     and one-way link all GeometricObject attributes and creation/deletion
 
@@ -42,10 +42,19 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
     >>> [type(child) for child in container.children]
     []
                         
-    >>> collection.add_object(Sphere(id=1))
+    >>> sphere = Sphere(id=1)
+    >>> collection.add_object(sphere)
     >>> [type(child) for child in container.children]    
     [<class 'traitlets.traitlets.Sprite'>, <class 'traitlets.traitlets.Mesh'>]
                         
+    >>> mesh = container.children[1]
+    >>> mesh.position
+    [0.0, 0.0, 0.0]
+                        
+    >>> sphere.position = (1,0,0)
+    >>> mesh.position
+    [1.0, 0.0, 0.0]
+
     >>> sphere = collection.pop(1)
     >>> [type(child) for child in container.children]
     []

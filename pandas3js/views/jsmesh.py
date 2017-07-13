@@ -29,7 +29,7 @@ def _create_trait_dlink(dic, key, gobject, jsobject):
     trait_dlink(None)
     return trait_dlink
 
-def create_jsmesh_view(gobject,mapping=None,jslink=False):
+def create_jsmesh_view(gobject,mapping=None):
     """create PyThreeJS Mesh for GeometricObjects
     and with one-way synchronisation
     

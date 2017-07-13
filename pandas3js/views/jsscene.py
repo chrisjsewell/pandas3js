@@ -10,7 +10,7 @@ from pandas3js.models.idcollection import GeometricCollection
 
 
 def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
-                        gobject_jsmap=None, jslink=True):
+                        gobject_jsmap=None, jslink=False):
     """create PyThreeJS Scene for GeometricCollection
     and one-way link all GeometricObject attributes and creation/deletion
 

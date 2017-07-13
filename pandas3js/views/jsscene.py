@@ -102,9 +102,9 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
         new_meshes = []
         for gobject in added_objects:
             if add_labels:
-                new_meshes.append(create_jslabelmesh_view(gobject,gobject_jsmap))
+                new_meshes.append(create_jslabelmesh_view(gobject,gobject_jsmap, jslink=jslink))
             if add_objects:
-                new_meshes.append(create_jsmesh_view(gobject,gobject_jsmap))
+                new_meshes.append(create_jsmesh_view(gobject,gobject_jsmap, jslink=jslink))
                         
         gcontainer.children = new_meshes + original_children
 

@@ -25,7 +25,7 @@ def create_gui(geometry=None,callback=None,
                view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
                show_object_info=False,
-               otype_column=None, jslink=False):
+               otype_column=None, jslink=True):
     """ creates simple gui to visualise 3d geometry,
     with a callback to update geometry according to option widgets 
 

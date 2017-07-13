@@ -11,6 +11,7 @@ except NameError:
 
 import pythreejs as js
 import traitlets as trait 
+import ipywidgets as widget
 from matplotlib import colors
 import numpy as np
 
@@ -28,7 +29,7 @@ def _create_trait_dlink(dic, key, gobject, jsobject):
     trait_dlink(None)
     return trait_dlink
 
-def create_jsmesh_view(gobject,mapping=None):
+def create_jsmesh_view(gobject,mapping=None,jslink=False):
     """create PyThreeJS Mesh for GeometricObjects
     and with one-way synchronisation
     
@@ -37,13 +38,16 @@ def create_jsmesh_view(gobject,mapping=None):
     gobject : GeometricObject
     mapping : None or dict
         if None, use default gobject->jsobject mapping
+    jslink : bool
+        if True, where possible, create client side links
+        http://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Events.html#The-difference-between-linking-in-the-kernel-and-linking-in-the-client 
     
     Examples
     --------
     
     >>> import pandas3js as pjs
     >>> sphere = pjs.models.Sphere()
-    >>> mesh = create_jsmesh_view(sphere)
+    >>> mesh = pjs.views.create_jsmesh_view(sphere)
     >>> mesh.position
     [0.0, 0.0, 0.0]
     >>> str(mesh.material.color)
@@ -67,6 +71,11 @@ def create_jsmesh_view(gobject,mapping=None):
     >>> mesh = create_jsmesh_view(pjs.models.Plane())
     
     """
+    if jslink:
+        direct_link = widget.jsdlink
+    else:
+        direct_link = trait.dlink
+
     class_str = obj_to_str(gobject)
     if hasattr(gobject, '_use_default_viewmap'):
         class_map = copy.deepcopy(gobject_jsmapping['default'])
@@ -88,7 +97,7 @@ def create_jsmesh_view(gobject,mapping=None):
     for key, val in class_map['gvar'].items():
         geometry.set_trait(key, val)
     for key, val in class_map['gdmap'].items():
-        trait.dlink((gobject, val), (geometry, key))
+        direct_link((gobject, val), (geometry, key))
     for gkey, gdic in class_map['gfmap'].items():
         handle = _create_trait_dlink(gdic, gkey, gobject, geometry)
         gobject.observe(handle,names=gdic['vars'])
@@ -99,7 +108,7 @@ def create_jsmesh_view(gobject,mapping=None):
     for key, val in class_map['matvar'].items():
         material.set_trait(key, val)
     for key, val in class_map['matdmap'].items():
-        trait.dlink((gobject, val), (material, key))
+        direct_link((gobject, val), (material, key))
     for mkey, mdic in class_map['matfmap'].items():
         handle = _create_trait_dlink(mdic, mkey, gobject, material)
         gobject.observe(handle,names=mdic['vars'])
@@ -111,7 +120,7 @@ def create_jsmesh_view(gobject,mapping=None):
     for key, val in class_map['meshvar'].items():
         mesh.set_trait(key, val)
     for key, val in class_map['meshdmap'].items():
-        trait.dlink((gobject, val), (mesh, key))
+        direct_link((gobject, val), (mesh, key))
     for skey, sdic in class_map['meshfmap'].items():
         handle = _create_trait_dlink(sdic, skey, gobject, mesh)
         gobject.observe(handle,names=sdic['vars'])
@@ -119,12 +128,13 @@ def create_jsmesh_view(gobject,mapping=None):
     # add special traits
     mesh.add_traits(gobject_id=HashableType())
     mesh.gobject_id = gobject.id
-    mesh.add_traits(other_info=trait.CUnicode())
-    trait.dlink((gobject, 'other_info'), (mesh, 'other_info'))        
+    mesh.add_traits(other_info=trait.CUnicode().tag(sync=True))
+    direct_link((gobject, 'other_info'), (mesh, 'other_info'))        
     
     return mesh
 
-def create_jslabelmesh_view(gobject, mapping=None):
+def create_jslabelmesh_view(gobject, mapping=None,
+                            jslink=False):
     """create PyThreeJS Text Mesh for GeometricObject
     and with one-way synchronisation
 
@@ -133,13 +143,16 @@ def create_jslabelmesh_view(gobject, mapping=None):
     gobject : GeometricObject
     mapping : None or dict
         if None, use default gobject->jsobject mapping
+    jslink : bool
+        if True, where possible, create client side links
+        http://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Events.html#The-difference-between-linking-in-the-kernel-and-linking-in-the-client 
 
     Examples
     --------
     
     >>> import pandas3js as pjs
     >>> sphere = pjs.models.Sphere()
-    >>> lmesh = create_jslabelmesh_view(sphere)
+    >>> lmesh = pjs.views.create_jslabelmesh_view(sphere)
     >>> lmesh.position
     [0.0, 0.0, 0.0]
     >>> str(lmesh.material.map.string)
@@ -160,6 +173,11 @@ def create_jslabelmesh_view(gobject, mapping=None):
     [1.0, 3.0, 1.0]
     
     """
+    if jslink:
+        direct_link = widget.jsdlink
+    else:
+        direct_link = trait.dlink
+        
     class_str = obj_to_str(gobject)
     if hasattr(gobject, '_use_default_viewmap'):
         class_map = copy.deepcopy(gobject_jsmapping['default'])
@@ -189,19 +207,19 @@ def create_jslabelmesh_view(gobject, mapping=None):
     # add special traits
     mesh.add_traits(gobject_id=HashableType())
     mesh.gobject_id = gobject.id
-    mesh.add_traits(other_info=trait.CUnicode())    
+    mesh.add_traits(other_info=trait.CUnicode().tag(sync=True))    
     
     if not class_map['show_label']:
         mesh.visible = False
         return mesh
 
     # add directional synchronisation
-    trait.dlink((gobject, 'other_info'), (mesh, 'other_info'))        
-    trait.dlink((gobject, 'label'), (text_map, 'string'))
-    trait.dlink((gobject, 'position'), (mesh, 'position'))
-    trait.dlink((gobject, 'label_visible'), (mesh, 'visible'))
+    direct_link((gobject, 'other_info'), (mesh, 'other_info'))        
+    direct_link((gobject, 'label'), (text_map, 'string'))
+    direct_link((gobject, 'position'), (mesh, 'position'))
+    direct_link((gobject, 'label_visible'), (mesh, 'visible'))
+    direct_link((gobject, 'label_transparency'), (material, 'opacity'))
     trait.dlink((gobject, 'label_color'), (text_map, 'color'), colors.to_hex)
-    trait.dlink((gobject, 'label_transparency'), (material, 'opacity'))
     trait.dlink((gobject, 'label_transparency'), (material, 'transparent'),
                lambda t: True if t <= 0.999 else False)
 

@@ -10,7 +10,7 @@ from pandas3js.models.idcollection import GeometricCollection
 
 
 def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
-                        gobject_jsmap=None):
+                        gobject_jsmap=None, jslink=False):
     """create PyThreeJS Scene for GeometricCollection
     and one-way link all GeometricObject attributes and creation/deletion
 
@@ -23,6 +23,9 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
         add object labels to scene
     gobject_jsmap : None or dict
         if None use default gobject->jsobject mapping
+    jslink : bool
+        if True, where possible, create client side links
+        http://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Events.html#The-difference-between-linking-in-the-kernel-and-linking-in-the-client     
     
     Returns
     -------
@@ -53,10 +56,10 @@ def create_js_scene_view(gcollect, add_objects=True, add_labels=False,
     meshes = []
     for gobject in gcollect.idobjects:
         if add_labels:
-            lmesh = create_jslabelmesh_view(gobject,gobject_jsmap)
+            lmesh = create_jslabelmesh_view(gobject,gobject_jsmap, jslink=jslink)
             meshes.append(lmesh)
         if add_objects:
-            gmesh = create_jsmesh_view(gobject,gobject_jsmap)
+            gmesh = create_jsmesh_view(gobject,gobject_jsmap, jslink=jslink)
             meshes.append(gmesh)
 
     # create dummy parent mesh to house all meshes, so we can use single mouse picker

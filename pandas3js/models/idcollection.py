@@ -248,7 +248,7 @@ class IDCollection(trait.HasTraits):
                     pass
                 if key==otype_column:
                     continue
-                if not idobject.has_trait(key):
+                if not key in idobject.get_object_trait_names():
                     raise trait.TraitError('object with id {0} does not have trait: {1}'.format(s.id, key))
                     
                 # wait to set traits until all are objects are tested
@@ -274,7 +274,7 @@ class IDCollection(trait.HasTraits):
         data = []
         for obj in self.idobjects:
             trait_dict = {}
-            for name in obj.trait_names():
+            for name in obj.get_object_trait_names():
                 if traits is not None:
                     if name not in traits:
                         continue

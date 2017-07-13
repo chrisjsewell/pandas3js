@@ -8,6 +8,7 @@ from collections import Hashable
 import uuid
 
 import traitlets as trait
+import ipywidgets as widgets
 from matplotlib import colors
 import pandas as pd
 
@@ -38,18 +39,27 @@ class HashableType(trait.TraitType):
         
         return value
     
-class IDObject(trait.HasTraits):
+class IDObject(widgets.Widget):
     """ an object with an id
     
     """
     id = HashableType()
     groups = trait.List(trait=trait.CUnicode(),default_value=("all",),
                         help='the groups that this object belongs to') 
-    other_info = trait.CUnicode('',help='other information about the object as HTML')
+    other_info = trait.CUnicode('',help='other information about the object as HTML').tag(sync=True)
     
     @trait.default('id')
     def _default_id(self):
         return uuid.uuid4()
+        
+    def get_object_trait_names(self):
+        """ get trait names which are only associated with the object,
+        i.e. not from the ipywidgets base class
+        """
+        base_ipywidget_traits = set(widgets.Widget().trait_names())
+        all_traits = set(self.trait_names())
+        return list(all_traits.difference(base_ipywidget_traits))
+        
     
     def trait_series(self):
         """ create pandas.Series of objects traits
@@ -65,7 +75,7 @@ class IDObject(trait.HasTraits):
         
         """
         trait_dict = {}
-        for name in self.trait_names():
+        for name in self.get_object_trait_names():
             value = getattr(self, name)
             # might break series if cell value is a list
             value = tuple(value) if isinstance(value, list) else value
@@ -155,16 +165,16 @@ class GeometricObject(IDObject):
     (0.0, 0.0, 0.0)
     
     """
-    position = Vector3(default_value=(0,0,0),help='cartesian coordinate of pivot')
+    position = Vector3(default_value=(0,0,0),help='cartesian coordinate of pivot').tag(sync=True)
 
-    visible = trait.Bool(True)
-    color = Color('red')
-    transparency = trait.CFloat(1,min=0.0,max=1.0)
+    visible = trait.Bool(True).tag(sync=True)
+    color = Color('red').tag(sync=True)
+    transparency = trait.CFloat(1,min=0.0,max=1.0).tag(sync=True)
 
-    label = trait.CUnicode('-')
-    label_visible = trait.Bool(False)
-    label_color = Color('red')
-    label_transparency = trait.CFloat(1,min=0.0,max=1.0)
+    label = trait.CUnicode('-').tag(sync=True).tag(sync=True)
+    label_visible = trait.Bool(False).tag(sync=True)
+    label_color = Color('red').tag(sync=True)
+    label_transparency = trait.CFloat(1,min=0.0,max=1.0).tag(sync=True)
 
 def default_viewmap(label_height=None):
     """ a wrapper to signal that all
@@ -204,7 +214,7 @@ class Sphere(GeometricObject):
     
 
     """
-    radius = trait.CFloat(1,min=0.)
+    radius = trait.CFloat(1,min=0.).tag(sync=True)
 
 # TODO orientation of default geometries
 @default_viewmap('height')
@@ -219,9 +229,9 @@ class Box(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    width = trait.CFloat(1)
-    height = trait.CFloat(1)
-    depth = trait.CFloat(1)
+    width = trait.CFloat(1).tag(sync=True)
+    height = trait.CFloat(1).tag(sync=True)
+    depth = trait.CFloat(1).tag(sync=True)
 
 @default_viewmap('radius')
 class Octahedron(GeometricObject):
@@ -235,8 +245,8 @@ class Octahedron(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    radius = trait.CFloat(1)
-    detail = trait.CFloat(0)    
+    radius = trait.CFloat(1).tag(sync=True)
+    detail = trait.CFloat(0).tag(sync=True)
 
 @default_viewmap('radius')
 class Icosahedron(GeometricObject):
@@ -250,8 +260,8 @@ class Icosahedron(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    radius = trait.CFloat(1)
-    detail = trait.CFloat(0)    
+    radius = trait.CFloat(1).tag(sync=True)
+    detail = trait.CFloat(0).tag(sync=True)  
 
 @default_viewmap('radius')
 class Circle(GeometricObject):
@@ -265,8 +275,8 @@ class Circle(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    radius = trait.CFloat(1)
-    segments = trait.CFloat(36)    
+    radius = trait.CFloat(1).tag(sync=True) 
+    segments = trait.CFloat(36).tag(sync=True)     
 
 class Plane(GeometricObject):
     """ a plane object
@@ -279,8 +289,8 @@ class Plane(GeometricObject):
     (0.0, 0.0, 0.0)
 
     """
-    normal = Vector3(default_value=(0,0,1),help='the normal vector of the plane')
-    width = trait.CFloat(1,min=0.0)
+    normal = Vector3(default_value=(0,0,1),help='the normal vector of the plane').tag(sync=True) 
+    width = trait.CFloat(1,min=0.0).tag(sync=True) 
 
     @trait.validate('normal')
     def _valid_normal(self, proposal):
@@ -309,9 +319,9 @@ class Line(GeometricObject):
         
     """
     
-    end = Vector3(default_value=(1,1,1),help='cartesian coordinate of line end')
-    end_color = Color('red')
-    linewidth = trait.CFloat(1,min=0.0)
+    end = Vector3(default_value=(1,1,1),help='cartesian coordinate of line end').tag(sync=True) 
+    end_color = Color('red').tag(sync=True) 
+    linewidth = trait.CFloat(1,min=0.0).tag(sync=True) 
 
 # TDOD only development version of PlainGeometry exposes face colors
 class TriclinicSolid(GeometricObject):
@@ -333,10 +343,10 @@ class TriclinicSolid(GeometricObject):
     pivot must be at the centre or corner
         
     """
-    a = Vector3(default_value=(1,0,0),help='box vector a')
-    b = Vector3(default_value=(0,1,0),help='box vector b')
-    c = Vector3(default_value=(0,0,1),help='box vector c')
-    pivot = trait.CUnicode('centre',help='pivot about centre or corner')
+    a = Vector3(default_value=(1,0,0),help='box vector a').tag(sync=True) 
+    b = Vector3(default_value=(0,1,0),help='box vector b').tag(sync=True) 
+    c = Vector3(default_value=(0,0,1),help='box vector c').tag(sync=True) 
+    pivot = trait.CUnicode('centre',help='pivot about centre or corner').tag(sync=True) 
     
     @trait.validate('pivot')
     def _valid_pivot(self, proposal):
@@ -364,7 +374,7 @@ class TriclinicWire(TriclinicSolid):
     not valid
         
     """
-    linewidth = trait.CFloat(1)
+    linewidth = trait.CFloat(1).tag(sync=True) 
 
 # TODO Gimbal: add labels at end of each vector
 class Gimbal(GeometricObject):
@@ -390,13 +400,13 @@ class Gimbal(GeometricObject):
     not valid
         
     """
-    a = Vector3(default_value=(1,0,0),help='vector a')
-    b = Vector3(default_value=(0,1,0),help='vector b')
-    c = Vector3(default_value=(0,0,1),help='vector c')
-    a_color = Color('red')
-    b_color = Color('green')
-    c_color = Color('orange')
-    linewidth = trait.CFloat(1,min=0.0)
+    a = Vector3(default_value=(1,0,0),help='vector a').tag(sync=True) 
+    b = Vector3(default_value=(0,1,0),help='vector b').tag(sync=True) 
+    c = Vector3(default_value=(0,0,1),help='vector c').tag(sync=True) 
+    a_color = Color('red').tag(sync=True) 
+    b_color = Color('green').tag(sync=True) 
+    c_color = Color('orange').tag(sync=True) 
+    linewidth = trait.CFloat(1,min=0.0).tag(sync=True) 
     
     
     

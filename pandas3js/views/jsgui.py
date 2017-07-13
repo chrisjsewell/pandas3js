@@ -25,7 +25,7 @@ def create_gui(geometry=None,callback=None,
                view=(10,-10,-10,10),fov=50,
                add_objects=True, add_labels=True,
                show_object_info=False,
-               otype_column=None):
+               otype_column=None, jslink=False):
     """ creates simple gui to visualise 3d geometry,
     with a callback to update geometry according to option widgets 
 
@@ -66,6 +66,9 @@ def create_gui(geometry=None,callback=None,
         add object labels to scene
     show_object_info : bool
         if True, show coordinate of object under mouse (currently only works for Perspective)
+    jslink : bool
+        if True, where possible, create client side links
+        http://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Events.html#The-difference-between-linking-in-the-kernel-and-linking-in-the-client     
     
     Returns
     -------
@@ -184,7 +187,7 @@ def create_gui(geometry=None,callback=None,
     else:
         gcollect = geometry
     scene = pjs.views.create_js_scene_view(gcollect,
-                    add_objects=add_objects,add_labels=add_labels)
+                    add_objects=add_objects,add_labels=add_labels, jslink=jslink)
     camera, renderer = pjs.views.create_jsrenderer(scene,
                                 orthographic=orthographic, camera_position=camera_position,
                                 view=view,fov=fov,

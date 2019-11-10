@@ -1,3 +1,5 @@
+**NOTE: this is deprecated, in favour of https://github.com/chrisjsewell/ase-notebook**
+
 [![Build Status](https://travis-ci.org/chrisjsewell/pandas3js.svg?branch=master)](https://travis-ci.org/chrisjsewell/pandas3js)
 [![Coverage Status](https://coveralls.io/repos/github/chrisjsewell/pandas3js/badge.svg?branch=master)](https://coveralls.io/github/chrisjsewell/pandas3js?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/pandas3js.svg)](https://pypi.python.org/pypi/pandas3js/)
